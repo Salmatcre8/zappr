@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>zappr — pitch deck</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #F7931A;
+    --volt:   #FFE500;
+    --ink:    #0A0A0A;
+    --bone:   #F5F5F0;
+    --line:   #0A0A0A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #2a2a2a; }
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Slide = a printed page. 10in x 7.5in (4:3) feels right for a pitch deck. */
+  .slide {
+    width: 10in;
+    height: 7.5in;
+    margin: 24px auto;
+    background: var(--bone);
+    border: 3px solid var(--ink);
+    box-shadow: 12px 12px 0 0 var(--ink);
+    padding: 0.6in 0.7in;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+  .slide:last-child { page-break-after: auto; }
+
+  .stamp {
+    position: absolute;
+    top: 0.45in;
+    right: 0.55in;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    opacity: 0.55;
+  }
+  .num {
+    position: absolute;
+    bottom: 0.4in;
+    right: 0.55in;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink);
+    opacity: 0.55;
+  }
+  .num::before { content: '// '; }
+
+  h1, h2, h3 { font-family: 'Space Mono', monospace; font-weight: 700; margin: 0; line-height: 1; }
+  h1 { font-size: 96px; letter-spacing: -2px; }
+  h2 { font-size: 38px; letter-spacing: -0.5px; }
+  h3 { font-size: 18px; text-transform: uppercase; letter-spacing: 0.12em; }
+  p  { font-size: 17px; line-height: 1.45; margin: 0 0 12px; }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    background: var(--ink);
+    color: var(--volt);
+    padding: 6px 10px;
+    border: 2px solid var(--ink);
+  }
+  .chip {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    background: var(--volt);
+    color: var(--ink);
+    padding: 5px 9px;
+    border: 2px solid var(--ink);
+    box-shadow: 3px 3px 0 0 var(--ink);
+  }
+  .pill-orange {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    background: var(--orange);
+    color: var(--ink);
+    padding: 5px 9px;
+    border: 2px solid var(--ink);
+    box-shadow: 3px 3px 0 0 var(--ink);
+  }
+
+  .panel {
+    background: #fff;
+    border: 2px solid var(--ink);
+    box-shadow: 5px 5px 0 0 var(--ink);
+    padding: 18px 20px;
+  }
+  .panel-dark {
+    background: var(--ink);
+    color: var(--bone);
+    border: 2px solid var(--ink);
+    box-shadow: 5px 5px 0 0 var(--orange);
+    padding: 18px 20px;
+  }
+  .panel-dark h3 { color: var(--volt); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+
+  .stack > * + * { margin-top: 14px; }
+
+  ul.tight { margin: 0; padding-left: 18px; }
+  ul.tight li { font-size: 15px; line-height: 1.5; margin-bottom: 6px; }
+
+  .big-number { font-family: 'Space Mono', monospace; font-size: 54px; font-weight: 700; line-height: 1; }
+  .label-tiny { font-family: 'Space Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; opacity: 0.7; }
+
+  /* Slide 1: cover */
+  .cover { background: var(--ink); color: var(--bone); display: flex; flex-direction: column; justify-content: space-between; }
+  .cover h1 { color: var(--bone); }
+  .cover .lightning {
+    width: 88px; height: 88px;
+    background: var(--orange);
+    border: 3px solid var(--bone);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 56px; line-height: 1;
+    box-shadow: 6px 6px 0 0 var(--volt);
+  }
+  .cover .stamp, .cover .num { color: var(--bone); opacity: 0.7; }
+  .cover .tagline { font-family: 'Space Mono', monospace; font-size: 22px; color: var(--volt); }
+
+  /* Quote callout */
+  .quote {
+    font-family: 'Space Mono', monospace;
+    font-size: 26px;
+    line-height: 1.35;
+    color: var(--ink);
+    border-left: 6px solid var(--orange);
+    padding: 6px 0 6px 18px;
+  }
+
+  /* Demo bubbles */
+  .bubble {
+    background: #fff;
+    border: 2px solid var(--ink);
+    box-shadow: 4px 4px 0 0 var(--ink);
+    padding: 12px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+  }
+  .bubble.user { background: var(--volt); }
+  .bubble.agent { background: #fff; }
+  .bubble .who { font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.6; margin-bottom: 4px; }
+
+  /* Print: one slide per page, no shadows around the page */
+  @page { size: 10in 7.5in; margin: 0; }
+  @media print {
+    html, body { background: #fff; }
+    .slide {
+      margin: 0;
+      box-shadow: none;
+      border: none;
+      width: 10in;
+      height: 7.5in;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- 1. COVER -->
+<section class="slide cover">
+  <div class="stamp">zappr // hack4freedom lagos 2026</div>
+  <div>
+    <div class="lightning">⚡</div>
+    <h1 style="margin-top: 26px;">zappr.</h1>
+    <p class="tagline" style="margin-top: 18px;">Bitcoin you can talk to,<br/>in the language you think in.</p>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+    <div class="label-tiny" style="opacity:0.7;">Nostr · Lightning · AI</div>
+    <div class="num" style="position:static;">01 / 10</div>
+  </div>
+</section>
+
+<!-- 2. THE MOMENT -->
+<section class="slide">
+  <div class="stamp">the moment</div>
+  <span class="eyebrow">Origin story</span>
+  <h2 style="margin-top: 18px;">A friend, a phone, and forty wasted minutes.</h2>
+  <div style="margin-top: 26px;" class="quote">
+    "She finally got the payment to land,<br/>
+    looked up at me, and said —<br/>
+    <span style="color: var(--orange);">'this is supposed to be the future?'"</span>
+  </div>
+  <p style="margin-top: 26px; max-width: 7in;">
+    A small-business owner in Lagos was paid in Bitcoin for the first time. It took
+    three apps, a YouTube tutorial, and a WhatsApp guide who kept sending links she
+    didn't understand. The payment worked. The experience didn't.
+  </p>
+  <p style="max-width: 7in;">
+    That sentence is why zappr exists.
+  </p>
+  <div class="num">02 / 10</div>
+</section>
+
+<!-- 3. THE PROBLEM -->
+<section class="slide">
+  <div class="stamp">the problem</div>
+  <span class="eyebrow">What's broken</span>
+  <h2 style="margin-top: 18px;">Bitcoin works. The experience doesn't.</h2>
+  <div class="grid-2" style="margin-top: 28px;">
+    <div class="panel stack">
+      <h3>Fragmented</h3>
+      <p>Wallet in one app. Social in another. Help in a third. Three logins, three contexts, zero memory between them.</p>
+    </div>
+    <div class="panel stack">
+      <h3>English-only</h3>
+      <p>Every Bitcoin tool ships in English first. A Yoruba trader has to think in a second language to send money.</p>
+    </div>
+    <div class="panel stack">
+      <h3>Jargon wall</h3>
+      <p>Lightning. NWC. zaps. nsec. The vocabulary alone filters out 95% of would-be users.</p>
+    </div>
+    <div class="panel stack">
+      <h3>False choice</h3>
+      <p>"Easy" apps custody your keys. Sovereign apps are too technical. Nothing is both friendly <em>and</em> self-custodial.</p>
+    </div>
+  </div>
+  <div class="num">03 / 10</div>
+</section>
+
+<!-- 4. WHO HURTS -->
+<section class="slide">
+  <div class="stamp">who hurts</div>
+  <span class="eyebrow">The audience</span>
+  <h2 style="margin-top: 18px;">1.4 billion people. 2,000+ languages. One Bitcoin.</h2>
+  <div class="grid-4" style="margin-top: 32px;">
+    <div class="panel">
+      <div class="big-number" style="color: var(--orange);">1.4B</div>
+      <div class="label-tiny" style="margin-top: 6px;">people across Africa</div>
+    </div>
+    <div class="panel">
+      <div class="big-number" style="color: var(--orange);">2k+</div>
+      <div class="label-tiny" style="margin-top: 6px;">spoken languages</div>
+    </div>
+    <div class="panel">
+      <div class="big-number" style="color: var(--orange);">8%+</div>
+      <div class="label-tiny" style="margin-top: 6px;">avg remittance fee</div>
+    </div>
+    <div class="panel">
+      <div class="big-number" style="color: var(--orange);">0</div>
+      <div class="label-tiny" style="margin-top: 6px;">unified BTC apps in native langs</div>
+    </div>
+  </div>
+  <div style="margin-top: 30px;" class="grid-3">
+    <div class="panel-dark"><h3>Creators</h3><p style="margin-top:8px;">who want to be tipped without leaving the conversation.</p></div>
+    <div class="panel-dark"><h3>Merchants</h3><p style="margin-top:8px;">who need to ask "how much did I receive today?" — in Pidgin.</p></div>
+    <div class="panel-dark"><h3>Newcomers</h3><p style="margin-top:8px;">who type "what is a zap?" and want a one-line answer in Hausa.</p></div>
+  </div>
+  <div class="num">04 / 10</div>
+</section>
+
+<!-- 5. THE INSIGHT -->
+<section class="slide">
+  <div class="stamp">the insight</div>
+  <span class="eyebrow">Why now is different</span>
+  <h2 style="margin-top: 18px;">The unlock isn't a better wallet.</h2>
+  <h2 style="color: var(--orange); margin-top: 6px;">It's one surface.</h2>
+  <div style="margin-top: 36px; max-width: 7.4in;">
+    <p style="font-size: 19px; line-height: 1.5;">
+      Stop asking people to learn three apps. Put the wallet, the social feed,
+      and a Bitcoin-native AI guide on <strong>one screen</strong> — and let the guide
+      speak whatever language the user walked in with.
+    </p>
+  </div>
+  <div style="margin-top: 30px;" class="grid-3">
+    <div class="panel"><h3>Read</h3><p style="margin-top:8px;">Your Nostr feed, live.</p></div>
+    <div class="panel"><h3>Zap</h3><p style="margin-top:8px;">Pay anyone, in two clicks.</p></div>
+    <div class="panel"><h3>Ask</h3><p style="margin-top:8px;">In Yoruba. Swahili. Pidgin. Hausa.</p></div>
+  </div>
+  <div class="num">05 / 10</div>
+</section>
+
+<!-- 6. THE PRODUCT -->
+<section class="slide">
+  <div class="stamp">the product</div>
+  <span class="eyebrow">What we built</span>
+  <h2 style="margin-top: 18px;">Read. Zap. Ask. One tab.</h2>
+  <div style="margin-top: 24px; display:grid; grid-template-columns: 1.6fr 2fr 1.4fr; gap: 14px; height: 4in; border: 2px solid var(--ink); box-shadow: 6px 6px 0 0 var(--ink); padding: 14px; background: #fff;">
+    <div style="background: var(--bone); border: 2px solid var(--ink); padding: 12px;">
+      <div class="label-tiny">Wallet</div>
+      <div style="font-family: 'Space Mono', monospace; font-size: 32px; font-weight:700; margin-top: 8px;">42,069 <span style="font-size:14px;">sats</span></div>
+      <div class="chip" style="margin-top: 14px;">⚡ NWC LIVE</div>
+      <div style="margin-top: 18px;" class="label-tiny">Recent</div>
+      <div style="font-family:'Space Mono',monospace;font-size:12px;margin-top:6px;">+ 1,000 sats · zap</div>
+      <div style="font-family:'Space Mono',monospace;font-size:12px;">− 2,500 sats · pay</div>
+    </div>
+    <div style="background: var(--bone); border: 2px solid var(--ink); padding: 12px;">
+      <div class="label-tiny">Feed</div>
+      <div style="background:#fff; border:2px solid var(--ink); padding:10px; margin-top:8px; font-size:12px;">@jack: ⚡ relays are humming</div>
+      <div style="background:#fff; border:2px solid var(--ink); padding:10px; margin-top:8px; font-size:12px;">@odell: zap if you ship</div>
+      <div style="background:var(--volt); border:2px solid var(--ink); padding:10px; margin-top:8px; font-size:12px;">@you: testing zappr from lagos 🇳🇬</div>
+    </div>
+    <div style="background: var(--ink); color: var(--bone); border: 2px solid var(--ink); padding: 12px;">
+      <div class="label-tiny" style="color: var(--volt);">Agent</div>
+      <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--bone); padding:8px; margin-top:8px; font-family:'Space Mono',monospace; font-size:11px;">check my balance</div>
+      <div style="background: #fff; color: var(--ink); border: 2px solid var(--bone); padding:8px; margin-top:8px; font-family:'Space Mono',monospace; font-size:11px;">You have 42,069 sats. Want to send some?</div>
+    </div>
+  </div>
+  <div class="num">06 / 10</div>
+</section>
+
+<!-- 7. HOW IT WORKS -->
+<section class="slide">
+  <div class="stamp">how it works</div>
+  <span class="eyebrow">Architecture</span>
+  <h2 style="margin-top: 18px;">Sovereign by default. Friendly by design.</h2>
+  <div class="grid-3" style="margin-top: 28px;">
+    <div class="panel stack">
+      <h3 style="color: var(--orange);">Nostr · NDK</h3>
+      <p>Your identity, your follows, your relays. We never see your nsec.</p>
+    </div>
+    <div class="panel stack">
+      <h3 style="color: var(--orange);">Lightning · NWC</h3>
+      <p>Bring any wallet — Alby, Mutiny, Primal. We just hold the connection.</p>
+    </div>
+    <div class="panel stack">
+      <h3 style="color: var(--orange);">Claude Agent</h3>
+      <p>Reads, drafts, explains. Multilingual. Confirms before any payment.</p>
+    </div>
+  </div>
+  <div class="panel-dark" style="margin-top: 20px;">
+    <h3>The trust model</h3>
+    <p style="margin-top: 10px; color: var(--bone);">
+      Keys live in your browser. Biometric vault (WebAuthn PRF + AES-GCM) means
+      no re-typing nsecs. Logout wipes everything. No server. No custody. No excuses.
+    </p>
+  </div>
+  <div class="num">07 / 10</div>
+</section>
+
+<!-- 8. DEMO MOMENTS -->
+<section class="slide">
+  <div class="stamp">demo moments</div>
+  <span class="eyebrow">Live on stage</span>
+  <h2 style="margin-top: 18px;">Three sentences. Three languages. Zero friction.</h2>
+  <div class="stack" style="margin-top: 26px;">
+    <div class="grid-2">
+      <div class="bubble user"><div class="who">user · english</div>check my balance</div>
+      <div class="bubble agent"><div class="who">zappr</div>You have 42,069 sats. ⚡</div>
+    </div>
+    <div class="grid-2">
+      <div class="bubble user"><div class="who">user · pidgin</div>abeg send 500 sats give @jack</div>
+      <div class="bubble agent"><div class="who">zappr</div>I go send 500 sats to @jack. Confirm?</div>
+    </div>
+    <div class="grid-2">
+      <div class="bubble user"><div class="who">user · yoruba</div>kí ni zap?</div>
+      <div class="bubble agent"><div class="who">zappr</div>Zap jẹ́ ọ̀nà tí o fi ń fún ẹnìkan ní sats lórí Nostr — bí "tip".</div>
+    </div>
+  </div>
+  <div class="num">08 / 10</div>
+</section>
+
+<!-- 9. WHY NOW -->
+<section class="slide">
+  <div class="stamp">why now</div>
+  <span class="eyebrow">Timing</span>
+  <h2 style="margin-top: 18px;">Every piece finally exists. We're stitching them.</h2>
+  <div class="grid-2" style="margin-top: 28px;">
+    <div class="panel stack">
+      <h3>NWC matured</h3>
+      <p>Any wallet plugs into any app with one string. The plumbing is done.</p>
+    </div>
+    <div class="panel stack">
+      <h3>Nostr crossed 1M</h3>
+      <p>The decentralized social layer has critical mass. Creators are already there.</p>
+    </div>
+    <div class="panel stack">
+      <h3>AI broke the language wall</h3>
+      <p>Claude speaks every African language we tested — fluently, not phrasebook-style.</p>
+    </div>
+    <div class="panel stack">
+      <h3>Remittance is still 8%</h3>
+      <p>Africa pays the highest remittance fees on Earth. Lightning makes it 0.1%.</p>
+    </div>
+  </div>
+  <div class="num">09 / 10</div>
+</section>
+
+<!-- 10. ASK / VISION -->
+<section class="slide cover">
+  <div class="stamp">the ask</div>
+  <div>
+    <span class="pill-orange">Hack4Freedom Lagos 2026</span>
+    <h1 style="margin-top: 22px; font-size: 76px;">Win this.<br/>Then ship<br/>the rest.</h1>
+  </div>
+  <div class="grid-3" style="gap: 14px;">
+    <div style="background: var(--bone); color: var(--ink); border: 2px solid var(--bone); padding: 14px;">
+      <h3>Next 30 days</h3>
+      <p style="margin-top:8px; font-size: 14px;">Merchant POS mode. QR-pay flow. Yoruba + Swahili default locales.</p>
+    </div>
+    <div style="background: var(--bone); color: var(--ink); border: 2px solid var(--bone); padding: 14px;">
+      <h3>Next 90 days</h3>
+      <p style="margin-top:8px; font-size: 14px;">Group wallets. Voice mode in 10 African languages. Offline relay cache.</p>
+    </div>
+    <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--bone); padding: 14px;">
+      <h3>The vision</h3>
+      <p style="margin-top:8px; font-size: 14px;">The default Bitcoin app for the next billion — built in Lagos.</p>
+    </div>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+    <div class="tagline" style="font-family:'Space Mono',monospace; font-size: 16px; color: var(--volt);">zappr.app · ⚡ talk to bitcoin</div>
+    <div class="num" style="position:static;">10 / 10</div>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark theme (default) */
+:root {
+  color-scheme: dark;
+  --bg: 10 10 10;         /* #0A0A0A — page background */
+  --panel: 20 20 20;      /* #141414 — raised panel */
+  --surface: 10 10 10;    /* #0A0A0A — recessed card inside panel */
+  --bone: 245 245 240;    /* #F5F5F0 — primary text */
+  --line: 42 42 42;       /* #2A2A2A — subtle dividers */
+}
+
+/* Light theme */
+.light {
+  color-scheme: light;
+  --bg: 242 240 232;      /* warm bone paper */
+  --panel: 255 255 255;   /* pure white raised panel */
+  --surface: 242 240 232; /* recessed card — same tone as bg for contrast vs white panel */
+  --bone: 10 10 10;       /* near-black text */
+  --line: 212 212 212;    /* #D4D4D4 */
+}
+
+html, body {
+  background: rgb(var(--bg));
+  color: rgb(var(--bone));
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-image: radial-gradient(rgb(var(--bone) / 0.05) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: rgb(var(--panel)); }
+::-webkit-scrollbar-thumb { background: #F7931A; border: 2px solid #000; }
+
+.font-mono { font-family: 'Space Mono', ui-monospace, monospace; }
+
+.brut {
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0px 0px #000;
+}
+
+.brut-panel {
+  background: rgb(var(--panel));
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0px 0px #000;
+}
+
+.brut-btn {
+  background: #F7931A;
+  color: #0A0A0A;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0px 0px #000;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  padding: 10px 16px;
+  transition: transform 120ms, box-shadow 120ms;
+}
+.brut-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0px 0px #000; }
+.brut-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0px 0px #000; }
+.brut-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.brut-btn-ghost {
+  background: rgb(var(--panel));
+  color: rgb(var(--bone));
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0px 0px #000;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  padding: 10px 16px;
+  transition: transform 120ms, box-shadow 120ms;
+}
+.brut-btn-ghost:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0px 0px #000; }
+
+.brut-input {
+  background: rgb(var(--surface));
+  color: rgb(var(--bone));
+  border: 2px solid #000;
+  box-shadow: inset 2px 2px 0 #000;
+  padding: 10px 12px;
+  font-family: 'Space Mono', monospace;
+  width: 100%;
+}
+.brut-input:focus { outline: 2px solid #F7931A; outline-offset: 2px; }
+
+/*
+  Explicit alpha utilities. Defined manually so they survive a stale Tailwind
+  JIT build (tailwind.config.ts changes don't always hot-reload in next dev).
+  These mirror Tailwind's `text-bone/<n>` and `bg-orange/<n>` and `bg-surface/<n>` syntax.
+*/
+@layer utilities {
+  .text-bone\/30 { color: rgb(var(--bone) / 0.3); }
+  .text-bone\/40 { color: rgb(var(--bone) / 0.4); }
+  .text-bone\/50 { color: rgb(var(--bone) / 0.5); }
+  .text-bone\/60 { color: rgb(var(--bone) / 0.6); }
+  .text-bone\/70 { color: rgb(var(--bone) / 0.7); }
+  .text-bone\/80 { color: rgb(var(--bone) / 0.8); }
+  .text-bone\/90 { color: rgb(var(--bone) / 0.9); }
+  .text-bone { color: rgb(var(--bone) / 1); }
+
+  .bg-bone\/5 { background-color: rgb(var(--bone) / 0.05); }
+  .bg-bone\/10 { background-color: rgb(var(--bone) / 0.1); }
+  .bg-surface { background-color: rgb(var(--surface) / 1); }
+  .bg-panel { background-color: rgb(var(--panel) / 1); }
+  .bg-bg { background-color: rgb(var(--bg) / 1); }
+
+  .bg-orange\/10 { background-color: rgb(247 147 26 / 0.1); }
+  .bg-orange\/20 { background-color: rgb(247 147 26 / 0.2); }
+
+  .border-line { border-color: rgb(var(--line) / 1); }
+}
