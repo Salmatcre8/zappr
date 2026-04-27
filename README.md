@@ -249,20 +249,6 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## Deploying to Vercel
-
-1. Push this repo to GitHub (done)
-2. Go to [vercel.com](https://vercel.com) → **Add New Project** → import `zappr`
-3. In **Environment Variables**, add:
-   ```
-   ANTHROPIC_API_KEY = sk-ant-...
-   ```
-4. Click **Deploy**
-
-That's it. **Only `ANTHROPIC_API_KEY` is required.** No database, no Redis, no other secrets.
-
----
-
 ## Design system
 
 Neobrutalist — hard edges, no rounded corners, bold shadows.
