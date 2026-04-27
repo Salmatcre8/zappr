@@ -67,10 +67,10 @@ export async function enrollVault(payload: PrfPlaintext): Promise<void> {
 
   const created = (await navigator.credentials.create({
     publicKey: {
-      challenge,
+      challenge: challenge as any,
       rp: { name: 'zappr', id: window.location.hostname },
       user: {
-        id: userId,
+        id: userId as any,
         name: 'zappr-vault',
         displayName: 'zappr vault',
       },
@@ -83,7 +83,7 @@ export async function enrollVault(payload: PrfPlaintext): Promise<void> {
         residentKey: 'preferred',
       },
       timeout: 60_000,
-      extensions: { prf: { eval: { first: salt } } },
+      extensions: { prf: { eval: { first: salt as any } } },
     },
   })) as PublicKeyCredential | null;
 
@@ -97,11 +97,11 @@ export async function enrollVault(payload: PrfPlaintext): Promise<void> {
   if (!prfOutput) {
     const getResp = (await navigator.credentials.get({
       publicKey: {
-        challenge: randomBytes(32),
-        allowCredentials: [{ id: created.rawId, type: 'public-key' }],
+        challenge: randomBytes(32) as any,
+        allowCredentials: [{ id: created.rawId as any, type: 'public-key' }],
         userVerification: 'required',
         timeout: 60_000,
-        extensions: { prf: { eval: { first: salt } } },
+        extensions: { prf: { eval: { first: salt as any } } },
       },
     })) as PublicKeyCredential | null;
 
@@ -138,13 +138,13 @@ export async function unlockVault(): Promise<PrfPlaintext> {
 
   const assertion = (await navigator.credentials.get({
     publicKey: {
-      challenge: randomBytes(32),
+      challenge: randomBytes(32) as any,
       allowCredentials: [
-        { id: stored.credentialId, type: 'public-key' },
+        { id: stored.credentialId as any, type: 'public-key' },
       ],
       userVerification: 'required',
       timeout: 60_000,
-      extensions: { prf: { eval: { first: stored.salt } } },
+      extensions: { prf: { eval: { first: stored.salt as any } } },
     },
   })) as PublicKeyCredential | null;
 
