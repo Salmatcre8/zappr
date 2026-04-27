@@ -12,7 +12,7 @@ const HKDF_INFO = new TextEncoder().encode('zappr-vault-v1');
 export async function deriveAesKey(prfOutput: ArrayBuffer): Promise<CryptoKey> {
   const baseKey = await crypto.subtle.importKey(
     'raw',
-    prfOutput,
+    prfOutput as any,
     'HKDF',
     false,
     ['deriveKey']
@@ -21,8 +21,8 @@ export async function deriveAesKey(prfOutput: ArrayBuffer): Promise<CryptoKey> {
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: new Uint8Array(0),
-      info: HKDF_INFO,
+      salt: new Uint8Array(0) as any,
+      info: HKDF_INFO as any,
     },
     baseKey,
     { name: 'AES-GCM', length: 256 },
@@ -36,7 +36,7 @@ export async function aesEncrypt(
   plaintext: Uint8Array
 ): Promise<{ ciphertext: Uint8Array; iv: Uint8Array }> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv as any }, key, plaintext as any);
   return { ciphertext: new Uint8Array(ct), iv };
 }
 
@@ -45,7 +45,7 @@ export async function aesDecrypt(
   ciphertext: Uint8Array,
   iv: Uint8Array
 ): Promise<Uint8Array> {
-  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv as any }, key, ciphertext as any);
   return new Uint8Array(pt);
 }
 
