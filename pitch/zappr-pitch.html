@@ -293,30 +293,52 @@
   <div class="num">05 / 10</div>
 </section>
 
-<!-- 6. THE PRODUCT -->
+<!-- 6. THE PRODUCT — onboarding magic + product surface -->
 <section class="slide">
   <div class="stamp">the product</div>
-  <span class="eyebrow">What we built</span>
-  <h2 style="margin-top: 18px;">Read. Zap. Ask. One tab.</h2>
-  <div style="margin-top: 24px; display:grid; grid-template-columns: 1.6fr 2fr 1.4fr; gap: 14px; height: 4in; border: 2px solid var(--ink); box-shadow: 6px 6px 0 0 var(--ink); padding: 14px; background: #fff;">
-    <div style="background: var(--bone); border: 2px solid var(--ink); padding: 12px;">
+  <span class="eyebrow">The whole onboarding flow</span>
+  <h2 style="margin-top: 14px;">Tap fingerprint. You&apos;re in.</h2>
+  <p style="margin-top: 8px; max-width: 7in; font-size: 14px;">
+    Beginners don&apos;t get a seed phrase, an nsec, or an NWC string. The passkey
+    on their device <em>becomes</em> the wallet — same fingerprint, deterministic key,
+    self-custodial, on the web.
+  </p>
+
+  <div style="margin-top: 18px; display:grid; grid-template-columns: 1fr 36px 1fr 36px 1fr; gap: 8px; align-items: center;">
+    <div class="panel" style="text-align:center; padding: 14px 10px;">
+      <div style="font-size: 42px; line-height: 1;">👆</div>
+      <h3 style="margin-top: 8px;">Step 1</h3>
+      <p style="margin-top:6px; font-size: 12px;">Tap &ldquo;Create with FaceID&rdquo;</p>
+    </div>
+    <div style="text-align:center; font-size: 28px; color: var(--orange);">→</div>
+    <div class="panel" style="text-align:center; padding: 14px 10px; background: var(--volt);">
+      <div style="font-size: 42px; line-height: 1;">🔐</div>
+      <h3 style="margin-top: 8px;">Step 2</h3>
+      <p style="margin-top:6px; font-size: 12px;">Passkey&apos;s PRF derives nsec + Lightning seed</p>
+    </div>
+    <div style="text-align:center; font-size: 28px; color: var(--orange);">→</div>
+    <div class="panel-dark" style="text-align:center; padding: 14px 10px;">
+      <div style="font-size: 42px; line-height: 1;">⚡</div>
+      <h3 style="margin-top: 8px;">Step 3</h3>
+      <p style="margin-top:6px; font-size: 12px; color: var(--bone);">Wallet + Nostr identity, ready to use</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 18px; display:grid; grid-template-columns: 1.4fr 1.6fr 1.2fr; gap: 12px; height: 2.4in; border: 2px solid var(--ink); box-shadow: 5px 5px 0 0 var(--ink); padding: 12px; background: #fff;">
+    <div style="background: var(--bone); border: 2px solid var(--ink); padding: 10px;">
       <div class="label-tiny">Wallet</div>
-      <div style="font-family: 'Space Mono', monospace; font-size: 32px; font-weight:700; margin-top: 8px;">42,069 <span style="font-size:14px;">sats</span></div>
-      <div class="chip" style="margin-top: 14px;">⚡ NWC LIVE</div>
-      <div style="margin-top: 18px;" class="label-tiny">Recent</div>
-      <div style="font-family:'Space Mono',monospace;font-size:12px;margin-top:6px;">+ 1,000 sats · zap</div>
-      <div style="font-family:'Space Mono',monospace;font-size:12px;">− 2,500 sats · pay</div>
+      <div style="font-family: 'Space Mono', monospace; font-size: 24px; font-weight:700; margin-top: 6px;">42,069 <span style="font-size:11px;">sats</span></div>
+      <div class="chip" style="margin-top: 10px; font-size: 9px;">⚡ SELF-CUSTODIAL</div>
     </div>
-    <div style="background: var(--bone); border: 2px solid var(--ink); padding: 12px;">
+    <div style="background: var(--bone); border: 2px solid var(--ink); padding: 10px;">
       <div class="label-tiny">Feed</div>
-      <div style="background:#fff; border:2px solid var(--ink); padding:10px; margin-top:8px; font-size:12px;">@jack: ⚡ relays are humming</div>
-      <div style="background:#fff; border:2px solid var(--ink); padding:10px; margin-top:8px; font-size:12px;">@odell: zap if you ship</div>
-      <div style="background:var(--volt); border:2px solid var(--ink); padding:10px; margin-top:8px; font-size:12px;">@you: testing zappr from lagos 🇳🇬</div>
+      <div style="background:#fff; border:2px solid var(--ink); padding:6px; margin-top:6px; font-size:10px;">@jack: ⚡ relays humming</div>
+      <div style="background:var(--volt); border:2px solid var(--ink); padding:6px; margin-top:6px; font-size:10px;">@you: testing zappr from lagos</div>
     </div>
-    <div style="background: var(--ink); color: var(--bone); border: 2px solid var(--ink); padding: 12px;">
-      <div class="label-tiny" style="color: var(--volt);">Agent</div>
-      <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--bone); padding:8px; margin-top:8px; font-family:'Space Mono',monospace; font-size:11px;">check my balance</div>
-      <div style="background: #fff; color: var(--ink); border: 2px solid var(--bone); padding:8px; margin-top:8px; font-family:'Space Mono',monospace; font-size:11px;">You have 42,069 sats. Want to send some?</div>
+    <div style="background: var(--ink); color: var(--bone); border: 2px solid var(--ink); padding: 10px;">
+      <div class="label-tiny" style="color: var(--volt);">Agent · Pidgin</div>
+      <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--bone); padding:6px; margin-top:6px; font-family:'Space Mono',monospace; font-size:10px;">abeg check my balance</div>
+      <div style="background: #fff; color: var(--ink); border: 2px solid var(--bone); padding:6px; margin-top:6px; font-family:'Space Mono',monospace; font-size:10px;">You get 42,069 sats.</div>
     </div>
   </div>
   <div class="num">06 / 10</div>
@@ -327,25 +349,33 @@
   <div class="stamp">how it works</div>
   <span class="eyebrow">Architecture</span>
   <h2 style="margin-top: 18px;">Sovereign by default. Friendly by design.</h2>
-  <div class="grid-3" style="margin-top: 28px;">
+  <div class="grid-4" style="margin-top: 22px;">
     <div class="panel stack">
       <h3 style="color: var(--orange);">Nostr · NDK</h3>
-      <p>Your identity, your follows, your relays. We never see your nsec.</p>
+      <p style="font-size:13px;">Identity, follows, relays. We never see your nsec.</p>
     </div>
     <div class="panel stack">
-      <h3 style="color: var(--orange);">Lightning · NWC</h3>
-      <p>Bring any wallet — Alby, Mutiny, Primal. We just hold the connection.</p>
+      <h3 style="color: var(--orange);">Breez SDK</h3>
+      <p style="font-size:13px;">Lightning + Liquid in the browser via WASM. Seedless wallets.</p>
+    </div>
+    <div class="panel stack">
+      <h3 style="color: var(--orange);">NWC</h3>
+      <p style="font-size:13px;">Power users bring Alby, Mutiny, Primal. One string, plug in.</p>
     </div>
     <div class="panel stack">
       <h3 style="color: var(--orange);">Claude Agent</h3>
-      <p>Reads, drafts, explains. Multilingual. Confirms before any payment.</p>
+      <p style="font-size:13px;">Reads, drafts, explains. Multilingual. Confirms payments.</p>
     </div>
   </div>
-  <div class="panel-dark" style="margin-top: 20px;">
-    <h3>The trust model</h3>
-    <p style="margin-top: 10px; color: var(--bone);">
-      Keys live in your browser. Biometric vault (WebAuthn PRF + AES-GCM) means
-      no re-typing nsecs. Logout wipes everything. No server. No custody. No excuses.
+
+  <div class="panel-dark" style="margin-top: 16px; padding: 14px 18px;">
+    <h3>One passkey. Two keys. Zero custody.</h3>
+    <pre style="margin-top: 10px; color: var(--bone); font-family: 'Space Mono', monospace; font-size: 11px; line-height: 1.5; white-space: pre-wrap;">PRF(passkey, "NYOASTRTSAOYN") → BIP32 m/44'/1237'/55'/0/0 → Nostr nsec
+PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</pre>
+    <p style="margin-top: 10px; color: var(--bone); font-size: 13px;">
+      Same fingerprint, both keys reproduced on every unlock. Nothing stored
+      except the credential id. Logout clears it. Backup phrase exportable for
+      power users who want to graduate.
     </p>
   </div>
   <div class="num">07 / 10</div>
@@ -355,8 +385,12 @@
 <section class="slide">
   <div class="stamp">demo moments</div>
   <span class="eyebrow">Live on stage</span>
-  <h2 style="margin-top: 18px;">Three sentences. Three languages. Zero friction.</h2>
-  <div class="stack" style="margin-top: 26px;">
+  <h2 style="margin-top: 18px;">One tap. Three languages. Zero friction.</h2>
+  <div class="stack" style="margin-top: 22px;">
+    <div class="grid-2">
+      <div class="bubble user" style="background: var(--orange);"><div class="who">user · onboarding</div>👆 (taps fingerprint)</div>
+      <div class="bubble agent"><div class="who">zappr</div>Wallet ready. Welcome to Bitcoin. ⚡</div>
+    </div>
     <div class="grid-2">
       <div class="bubble user"><div class="who">user · english</div>check my balance</div>
       <div class="bubble agent"><div class="who">zappr</div>You have 42,069 sats. ⚡</div>
@@ -378,22 +412,30 @@
   <div class="stamp">why now</div>
   <span class="eyebrow">Timing</span>
   <h2 style="margin-top: 18px;">Every piece finally exists. We're stitching them.</h2>
-  <div class="grid-2" style="margin-top: 28px;">
+  <div class="grid-3" style="margin-top: 22px;">
+    <div class="panel stack">
+      <h3>Breez Passkey Login</h3>
+      <p style="font-size:13px;">Shipped March 2026. Self-custodial Lightning from a fingerprint, no seed phrase. We&apos;re among the first web apps integrating it.</p>
+    </div>
+    <div class="panel stack">
+      <h3>WebAuthn PRF universal</h3>
+      <p style="font-size:13px;">Chrome 147, Firefox 148, Safari 18 — PRF works on every modern browser as of mid-2026. The fallback path is gone.</p>
+    </div>
     <div class="panel stack">
       <h3>NWC matured</h3>
-      <p>Any wallet plugs into any app with one string. The plumbing is done.</p>
+      <p style="font-size:13px;">Any wallet plugs into any app with one string. Power users are already comfortable.</p>
     </div>
     <div class="panel stack">
       <h3>Nostr crossed 1M</h3>
-      <p>The decentralized social layer has critical mass. Creators are already there.</p>
+      <p style="font-size:13px;">The decentralized social layer has critical mass. Creators are already there.</p>
     </div>
     <div class="panel stack">
       <h3>AI broke the language wall</h3>
-      <p>Claude speaks every African language we tested — fluently, not phrasebook-style.</p>
+      <p style="font-size:13px;">Claude speaks every African language we tested — fluently, not phrasebook-style.</p>
     </div>
     <div class="panel stack">
-      <h3>Remittance is still 8%</h3>
-      <p>Africa pays the highest remittance fees on Earth. Lightning makes it 0.1%.</p>
+      <h3>Remittance still 8%</h3>
+      <p style="font-size:13px;">Africa pays the highest remittance fees on Earth. Lightning makes it 0.1%.</p>
     </div>
   </div>
   <div class="num">09 / 10</div>

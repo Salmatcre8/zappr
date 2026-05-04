@@ -2,13 +2,14 @@
 
 import WalletPanel from '@/components/wallet/WalletPanel';
 import ConnectWallet from '@/components/wallet/ConnectWallet';
+import BackupPhraseCard from '@/components/wallet/BackupPhraseCard';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useNostrStore } from '@/store/useNostrStore';
 import { truncateNpub } from '@/lib/nostr/keys';
 import { User } from 'lucide-react';
 
 export default function Sidebar() {
-  const { provider } = useWalletStore();
+  const { adapter } = useWalletStore();
   const { npub } = useNostrStore();
 
   return (
@@ -25,7 +26,8 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {provider ? <WalletPanel /> : <ConnectWallet />}
+      {adapter ? <WalletPanel /> : <ConnectWallet />}
+      <BackupPhraseCard />
     </div>
   );
 }

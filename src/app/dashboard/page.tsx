@@ -7,9 +7,16 @@ import { useNostrStore } from '@/store/useNostrStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { initNDK } from '@/lib/nostr/ndk';
 import { derivePubkeyFromNsec } from '@/lib/nostr/keys';
-import { connectNWC } from '@/lib/wallet/nwc';
-import { getBalanceSats } from '@/lib/wallet/lightning';
+import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
+import { BreezAdapter } from '@/lib/wallet/breezAdapter';
 import { loadSession, clearSession } from '@/lib/auth/session';
+import { vaultGet } from '@/lib/auth/vault';
+import { unlockVault } from '@/lib/auth/webauthn';
+import {
+  assertPasskey,
+  deriveNsecFromPrf,
+  deriveMnemonicFromPrf,
+} from '@/lib/auth/passkey-derive';
 import TopBar from '@/components/layout/TopBar';
 import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
@@ -23,18 +30,70 @@ export default function DashboardPage() {
   const { pubkey, ndk, setNdk, setIdentity } = useNostrStore();
   const [tab, setTab] = useState<Tab>('feed');
   const [hydrating, setHydrating] = useState(true);
+  const [hydrationLabel, setHydrationLabel] = useState('restoring session…');
 
   useEffect(() => {
     let cancelled = false;
 
-    // Already hydrated in-memory (came from /login push) — nothing to do.
     if (pubkey && ndk) {
       setHydrating(false);
       return;
     }
 
-    // Try to rehydrate from sessionStorage (survives a page refresh).
     (async () => {
+      // Priority 1: derived-mode vault — re-derive both keys via PRF.
+      const blob = await vaultGet();
+      if (blob?.kind === 'derived') {
+        try {
+          setHydrationLabel('biometric unlock…');
+          const { nostrPrf, liquidPrf } = await assertPasskey(blob.credentialId);
+          const { nsec, hex, npub } = deriveNsecFromPrf(nostrPrf);
+          const mnemonic = deriveMnemonicFromPrf(liquidPrf);
+          const ndkInst = await initNDK({ nsec });
+          if (cancelled) return;
+          setNdk(ndkInst);
+          setIdentity(hex, npub);
+          try {
+            const adapter = await BreezAdapter.connect(mnemonic);
+            useWalletStore.getState().setAdapter(adapter);
+            useWalletStore.getState().setBalance(await adapter.getBalance());
+          } catch (e) {
+            console.warn('Breez hydrate failed', e);
+          }
+          if (!cancelled) setHydrating(false);
+          return;
+        } catch {
+          if (!cancelled) router.replace('/login');
+          return;
+        }
+      }
+
+      // Priority 2: encrypted vault — biometric prompt to decrypt nsec.
+      if (blob?.kind === 'encrypted') {
+        try {
+          setHydrationLabel('biometric unlock…');
+          const payload = await unlockVault();
+          const { hex, npub } = derivePubkeyFromNsec(payload.nsec);
+          const ndkInst = await initNDK({ nsec: payload.nsec });
+          if (cancelled) return;
+          setNdk(ndkInst);
+          setIdentity(hex, npub);
+          if (payload.nwc) {
+            try {
+              const adapter = await NwcAdapter.connect(payload.nwc);
+              useWalletStore.getState().setAdapter(adapter, { connectionString: payload.nwc });
+              useWalletStore.getState().setBalance(await adapter.getBalance());
+            } catch {}
+          }
+          if (!cancelled) setHydrating(false);
+          return;
+        } catch {
+          if (!cancelled) router.replace('/login');
+          return;
+        }
+      }
+
+      // Priority 3: sessionStorage — temporary nsec or NIP-07 hint.
       const session = loadSession();
       if (!session || (!session.nsec && !session.useNip07)) {
         router.replace('/login');
@@ -63,18 +122,14 @@ export default function DashboardPage() {
 
         if (session.nwc) {
           try {
-            const provider = await connectNWC(session.nwc);
-            useWalletStore.getState().setProvider(provider, session.nwc);
-            const bal = await getBalanceSats(provider);
-            useWalletStore.getState().setBalance(bal);
-          } catch {
-            // Wallet rehydration is best-effort. The user can reconnect manually.
-          }
+            const adapter = await NwcAdapter.connect(session.nwc);
+            useWalletStore.getState().setAdapter(adapter, { connectionString: session.nwc });
+            useWalletStore.getState().setBalance(await adapter.getBalance());
+          } catch {}
         }
 
         if (!cancelled) setHydrating(false);
       } catch {
-        // Stored nsec is corrupt or NDK failed to connect — wipe and force re-login.
         clearSession();
         if (!cancelled) router.replace('/login');
       }
@@ -89,7 +144,7 @@ export default function DashboardPage() {
     return (
       <div className="h-[100dvh] flex items-center justify-center">
         <div className="flex items-center gap-3 font-mono text-xs text-bone/60">
-          <Loader2 className="w-4 h-4 animate-spin" /> restoring session…
+          <Loader2 className="w-4 h-4 animate-spin" /> {hydrationLabel}
         </div>
       </div>
     );

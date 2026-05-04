@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { Wallet, Loader2 } from 'lucide-react';
-import { connectNWC } from '@/lib/wallet/nwc';
-import { getBalanceSats, listTransactions } from '@/lib/wallet/lightning';
+import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
 import { useWalletStore } from '@/store/useWalletStore';
 
 export default function ConnectWallet() {
   const [value, setValue] = useState('');
-  const { connecting, error, setConnecting, setError, setProvider, setBalance, setTxs } =
+  const { connecting, error, setConnecting, setError, setAdapter, setBalance, setTxs } =
     useWalletStore();
 
   const connect = async () => {
@@ -16,13 +15,11 @@ export default function ConnectWallet() {
     setConnecting(true);
     setError(null);
     try {
-      const provider = await connectNWC(value.trim());
-      setProvider(provider, value.trim());
+      const adapter = await NwcAdapter.connect(value.trim());
+      setAdapter(adapter, { connectionString: value.trim() });
       try {
-        const bal = await getBalanceSats(provider);
-        setBalance(bal);
-        const txs = await listTransactions(provider, 5);
-        setTxs(txs);
+        setBalance(await adapter.getBalance());
+        setTxs(await adapter.listTransactions(5));
       } catch {}
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Connect failed');

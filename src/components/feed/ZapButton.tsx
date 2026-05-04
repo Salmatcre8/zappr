@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Zap, Loader2, Check, X } from 'lucide-react';
 import { useWalletStore } from '@/store/useWalletStore';
-import { lnAddressToInvoice, payInvoice } from '@/lib/wallet/lightning';
+import { lnAddressToInvoice } from '@/lib/wallet/lightning';
 
 export default function ZapButton({
   targetPubkey,
@@ -14,7 +14,7 @@ export default function ZapButton({
   eventId?: string;
   lud16?: string;
 }) {
-  const { provider } = useWalletStore();
+  const { adapter } = useWalletStore();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(21);
   const [paying, setPaying] = useState(false);
@@ -22,7 +22,7 @@ export default function ZapButton({
   const [error, setError] = useState<string | null>(null);
 
   const zap = async () => {
-    if (!provider || !lud16) {
+    if (!adapter || !lud16) {
       setError(lud16 ? 'Wallet not connected' : 'User has no Lightning address');
       return;
     }
@@ -30,7 +30,7 @@ export default function ZapButton({
     setError(null);
     try {
       const bolt11 = await lnAddressToInvoice(lud16, amount, 'zapped via zappr');
-      await payInvoice(provider, bolt11);
+      await adapter.payInvoice(bolt11);
       setDone(true);
       setTimeout(() => { setOpen(false); setDone(false); }, 1200);
     } catch (e) {

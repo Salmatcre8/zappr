@@ -12,7 +12,7 @@ import { vaultClear } from '@/lib/auth/vault';
 export default function TopBar() {
   const router = useRouter();
   const { npub, reset: resetNostr } = useNostrStore();
-  const { provider, reset: resetWallet } = useWalletStore();
+  const { adapter, reset: resetWallet } = useWalletStore();
 
   const logout = async () => {
     clearSession();
@@ -32,8 +32,10 @@ export default function TopBar() {
       </div>
       <div className="flex items-center gap-2 md:gap-3 font-mono text-xs">
         <div className="hidden sm:flex items-center gap-1.5">
-          <Radio className={`w-3.5 h-3.5 ${provider ? 'text-volt' : 'text-bone/30'}`} />
-          <span className="text-bone/60">{provider ? 'NWC LIVE' : 'NWC OFF'}</span>
+          <Radio className={`w-3.5 h-3.5 ${adapter ? 'text-volt' : 'text-bone/30'}`} />
+          <span className="text-bone/60">
+            {adapter ? (adapter.kind === 'breez' ? 'WALLET LIVE' : 'NWC LIVE') : 'WALLET OFF'}
+          </span>
         </div>
         <span className="hidden md:inline text-bone/70">{npub ? truncateNpub(npub) : ''}</span>
         <ThemeToggle />

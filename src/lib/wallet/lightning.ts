@@ -1,39 +1,10 @@
-import type { NwcProvider } from './nwc';
-import type { WalletTx } from '@/types/wallet';
+/*
+  Backend-agnostic Lightning helpers. Wallet methods live on WalletAdapter;
+  this file only holds protocol helpers (LNURL-pay) that aren't tied to a
+  specific wallet backend.
+*/
 
-export async function getBalanceSats(provider: NwcProvider): Promise<number> {
-  const res = await provider.getBalance();
-  return Math.floor(res.balance);
-}
-
-export async function payInvoice(provider: NwcProvider, bolt11: string) {
-  return provider.sendPayment(bolt11);
-}
-
-export async function makeInvoice(
-  provider: NwcProvider,
-  amountSats: number,
-  memo?: string
-): Promise<string> {
-  const res = await provider.makeInvoice({ amount: amountSats, defaultMemo: memo });
-  return res.paymentRequest;
-}
-
-export async function listTransactions(
-  provider: NwcProvider,
-  limit = 10
-): Promise<WalletTx[]> {
-  try {
-    // @ts-ignore — SDK exposes listTransactions on NWC
-    const res = await provider.listTransactions?.({ limit });
-    const list = (res?.transactions || []) as WalletTx[];
-    return list;
-  } catch {
-    return [];
-  }
-}
-
-// Resolve a lightning address (user@domain) to a BOLT11 invoice via LNURL-pay
+// Resolve a lightning address (user@domain) to a BOLT11 invoice via LNURL-pay.
 export async function lnAddressToInvoice(
   address: string,
   amountSats: number,
@@ -49,7 +20,8 @@ export async function lnAddressToInvoice(
     throw new Error('Amount out of range');
   }
   const params = new URLSearchParams({ amount: amountMsat.toString() });
-  if (comment && lnurl.commentAllowed) params.set('comment', comment.slice(0, lnurl.commentAllowed));
+  if (comment && lnurl.commentAllowed)
+    params.set('comment', comment.slice(0, lnurl.commentAllowed));
   const cbRes = await fetch(`${lnurl.callback}?${params.toString()}`);
   if (!cbRes.ok) throw new Error('LNURL callback failed');
   const cb = await cbRes.json();

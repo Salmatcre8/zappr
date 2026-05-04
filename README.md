@@ -13,11 +13,12 @@ Built for **Hack4Freedom Lagos 2026**.
 | Feature | Detail |
 |---|---|
 | **Nostr feed** | Reads your social graph, renders notes in real time via NDK |
-| **Lightning wallet** | Connect any NWC-compatible wallet (Alby, Mutiny, Primal) |
+| **Lightning wallet** | Connect any NWC-compatible wallet (Alby, Mutiny, Primal) **or** create one from your fingerprint via Breez SDK + Liquid |
 | **AI agent** | Ask about balance, zap posts, send payments, post notes — in English, Pidgin, Yoruba, Hausa, Swahili, and more |
 | **Self-custodial** | Your nsec never leaves the browser. No server holds your keys |
+| **Seedless onboarding** | Tap fingerprint → fresh Lightning wallet + Nostr identity, deterministically derived via WebAuthn PRF. No seed phrase to copy |
 | **Biometric vault** | WebAuthn PRF + AES-GCM encrypts your nsec in IndexedDB. Fingerprint/Face ID unlocks it |
-| **Three login paths** | Biometric vault · NIP-07 extension · direct nsec |
+| **Four login paths** | Seedless passkey · biometric vault · NIP-07 extension · direct nsec |
 
 ---
 
@@ -101,28 +102,51 @@ Claude returns  ──► text?  → render to chat
                POST /api/agent again (loop)
 ```
 
-### Auth layer
+### Auth layer (four paths)
 
 ```
-On login:
-  1. Biometric vault enrolled?
-       YES → unlockVault() [WebAuthn get() + PRF → AES-GCM decrypt]
-       NO  → check sessionStorage
-               nsec found?  → rehydrate NDK with nsec
-               useNip07?    → rehydrate NDK with NIP-07 signer
-               nothing?     → redirect /login
+On login screen:
 
-After nsec login:
-  BiometricSetupBanner appears on dashboard
-  User clicks "Set up" →
-    enrollVault({ nsec, nwc })     [WebAuthn create() + PRF → AES-GCM encrypt → IndexedDB]
-    clearSession()                  [wipe sessionStorage — vault is now sole source of truth]
+  ┌──────────────────────────────────────────────────────────┐
+  │ "Create with FaceID/Fingerprint"  ← seedless beginner    │
+  │ "Unlock with biometric"           ← returning user       │
+  │ "Sign in with extension"          ← NIP-07 power user    │
+  │ nsec + NWC form                   ← traditional          │
+  └──────────────────────────────────────────────────────────┘
+
+On dashboard load (in priority order):
+
+  1. Derived vault (passkey wallet)?
+       YES → biometric prompt
+             → re-derive nsec + Liquid mnemonic from PRF outputs
+             → init NDK + Breez SDK
+  2. Encrypted vault (legacy biometric)?
+       YES → biometric prompt → AES-GCM decrypt → init NDK
+  3. sessionStorage (nsec or useNip07)?
+       YES → re-init NDK from saved hint
+  4. Nothing → redirect /login
 
 On logout:
-  clearSession() + vaultClear() + resetNostr() + resetWallet() → /login
+  clearSession() + vaultClear() + reset stores → /login
 ```
 
-### Key derivation (biometric vault)
+### Key derivation — seedless passkey wallet
+
+One passkey, evaluated against two salts in a single WebAuthn ceremony:
+
+```
+WebAuthn PRF (passkey)
+   ├── eval salt = "NYOASTRTSAOYN"  (Breez magic constant)
+   │     └── BIP32 m/44'/1237'/55'/0/0  →  Nostr nsec
+   │
+   └── eval salt = "zappr-liquid-v1"
+         └── BIP39 mnemonic (12 words)  →  Breez SDK Liquid wallet
+```
+
+The same fingerprint deterministically reproduces both keys on every unlock.
+Nothing is stored in IndexedDB except the passkey credential id.
+
+### Key derivation — encrypted vault (legacy)
 
 ```
 WebAuthn PRF output (32 bytes)
@@ -154,7 +178,7 @@ src/
 │
 ├── components/
 │   ├── auth/
-│   │   ├── LoginPanel.tsx        # Three-path login (biometric/NIP-07/nsec)
+│   │   ├── LoginPanel.tsx        # Four-path login (passkey/biometric/NIP-07/nsec)
 │   │   └── BiometricSetupBanner.tsx  # Post-login vault enrollment prompt
 │   ├── feed/
 │   │   ├── UnifiedFeed.tsx       # Nostr feed container
@@ -162,7 +186,8 @@ src/
 │   │   └── ZapButton.tsx         # Inline zap control
 │   ├── wallet/
 │   │   ├── WalletPanel.tsx       # Balance + transaction history
-│   │   └── ConnectWallet.tsx     # NWC connection form
+│   │   ├── ConnectWallet.tsx     # NWC connection form
+│   │   └── BackupPhraseCard.tsx  # BIP-39 mnemonic export (passkey wallets)
 │   ├── agent/
 │   │   ├── AgentChat.tsx         # Tool loop orchestrator
 │   │   ├── AgentInput.tsx        # Chat input
@@ -179,17 +204,20 @@ src/
 │   │   ├── keys.ts               # nsec → hex/npub derivation
 │   │   └── events.ts             # fetchFollowList, fetchFeed, publishNote
 │   ├── wallet/
-│   │   ├── nwc.ts                # NWC provider init via Alby SDK
-│   │   └── lightning.ts          # balance, pay, invoice, lnAddress→invoice
+│   │   ├── adapter.ts            # WalletAdapter interface
+│   │   ├── nwcAdapter.ts         # NWC implementation (Alby SDK)
+│   │   ├── breezAdapter.ts       # Breez SDK Liquid implementation (WASM)
+│   │   └── lightning.ts          # LNURL-pay helper (backend-agnostic)
 │   ├── agent/
 │   │   ├── tools.ts              # Anthropic tool schemas
 │   │   ├── clientExecutor.ts     # Tool dispatcher (runs locally in browser)
 │   │   └── systemPrompt.ts       # Agent persona + language instructions
 │   └── auth/
 │       ├── session.ts            # sessionStorage read/write/clear
-│       ├── vault.ts              # IndexedDB read/write/clear
+│       ├── vault.ts              # IndexedDB — encrypted + derived modes
 │       ├── crypto.ts             # HKDF + AES-GCM
-│       └── webauthn.ts           # enrollVault, unlockVault (PRF)
+│       ├── webauthn.ts           # enrollVault, unlockVault, enrollDerivedVault
+│       └── passkey-derive.ts     # PRF → BIP32 nsec + BIP39 mnemonic
 │
 └── store/
     ├── useNostrStore.ts          # NDK instance, pubkey, npub
@@ -207,7 +235,9 @@ src/
 | Language | TypeScript |
 | Styling | Tailwind CSS — neobrutalist theme |
 | Nostr | `@nostr-dev-kit/ndk` 2.10.7 |
-| Lightning | `@getalby/sdk` 3.7.1 (NWC) |
+| Lightning (NWC) | `@getalby/sdk` 3.7.1 |
+| Lightning (seedless) | `@breeztech/breez-sdk-liquid` (WASM) |
+| Key derivation | `@scure/bip32`, `@scure/bip39` |
 | AI | `@anthropic-ai/sdk` 0.39.0 — Claude Sonnet 4.6 |
 | State | Zustand 4.5.4 |
 | Auth | WebAuthn PRF + IndexedDB + sessionStorage |
@@ -217,13 +247,18 @@ src/
 
 ## Environment variables
 
-Only **one** environment variable is required:
-
 ```env
+# Required — server-side, used by /api/agent for Claude calls.
 ANTHROPIC_API_KEY=sk-ant-...
+
+# Optional — required only for the seedless "Create with FaceID/Fingerprint"
+# wallet flow. Get a free key at https://breez.technology/request-api-key/
+# The existing nsec / NIP-07 / NWC paths work without it.
+NEXT_PUBLIC_BREEZ_API_KEY=
 ```
 
-Everything else (Nostr keys, NWC connection string) stays in the browser and is never sent to the server.
+Nostr keys and NWC connection strings live in the browser and are never sent
+to the server. The Breez API key is a public per-app identifier (not a secret).
 
 ---
 
@@ -243,6 +278,13 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000).
 
 **To test the full flow:**
+
+*Seedless path (beginner):*
+1. Set `NEXT_PUBLIC_BREEZ_API_KEY` in `.env.local`
+2. Open the login screen, tap "Create with FaceID/Fingerprint"
+3. Approve the biometric prompt — wallet + Nostr identity created in one step
+
+*Power-user path:*
 1. Get a Nostr key from [getalby.com](https://getalby.com) or generate one with `nak keygen`
 2. Get an NWC connection string from Alby, Mutiny, or Primal (optional)
 3. Log in with your nsec → the AI agent can immediately check your balance and feed

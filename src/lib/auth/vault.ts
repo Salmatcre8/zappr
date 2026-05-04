@@ -1,9 +1,15 @@
 /*
-  IndexedDB vault for the encrypted nsec blob.
+  IndexedDB vault — supports two modes:
 
-  Holds the WebAuthn credential id (so we can call get() with allowCredentials),
-  the AES-GCM iv, the PRF salt, and the ciphertext. The actual encryption /
-  decryption lives in webauthn.ts + crypto.ts — this file is just storage.
+  1. 'encrypted' — legacy. nsec encrypted with a key derived from PRF(passkey, salt).
+     Used by users who logged in with an existing nsec and then enrolled biometrics.
+
+  2. 'derived' — new. Stores only the credential id. The nsec AND Liquid mnemonic
+     are re-derived from PRF outputs on every unlock (zero ciphertext on disk).
+     Used by the seedless "Start fresh" passkey wallet path.
+
+  The `kind` field discriminates. Pre-existing blobs without a kind field are
+  treated as 'encrypted' for backwards compat.
 */
 
 const DB_NAME = 'zappr';
@@ -11,12 +17,20 @@ const DB_VERSION = 1;
 const STORE = 'vault';
 const KEY = 'session';
 
-export type VaultBlob = {
+export type EncryptedVaultBlob = {
+  kind: 'encrypted';
   credentialId: Uint8Array;
   ciphertext: Uint8Array;
   iv: Uint8Array;
   salt: Uint8Array;
 };
+
+export type DerivedVaultBlob = {
+  kind: 'derived';
+  credentialId: Uint8Array;
+};
+
+export type VaultBlob = EncryptedVaultBlob | DerivedVaultBlob;
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -41,7 +55,15 @@ export async function vaultGet(): Promise<VaultBlob | null> {
     return await new Promise<VaultBlob | null>((resolve, reject) => {
       const tx = db.transaction(STORE, 'readonly');
       const req = tx.objectStore(STORE).get(KEY);
-      req.onsuccess = () => resolve((req.result as VaultBlob | undefined) ?? null);
+      req.onsuccess = () => {
+        const raw = req.result as VaultBlob | undefined;
+        if (!raw) return resolve(null);
+        if (!('kind' in raw)) {
+          resolve({ kind: 'encrypted', ...(raw as Omit<EncryptedVaultBlob, 'kind'>) });
+        } else {
+          resolve(raw);
+        }
+      };
       req.onerror = () => reject(req.error);
     });
   } catch {
@@ -74,4 +96,9 @@ export async function vaultClear(): Promise<void> {
 export async function vaultExists(): Promise<boolean> {
   const blob = await vaultGet();
   return !!blob;
+}
+
+export async function vaultKind(): Promise<'encrypted' | 'derived' | null> {
+  const blob = await vaultGet();
+  return blob?.kind ?? null;
 }

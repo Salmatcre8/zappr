@@ -3,20 +3,19 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw, ArrowUpRight, ArrowDownLeft, Zap } from 'lucide-react';
 import { useWalletStore } from '@/store/useWalletStore';
-import { getBalanceSats, listTransactions } from '@/lib/wallet/lightning';
 import { formatDistanceToNowStrict } from 'date-fns';
 
 export default function WalletPanel() {
-  const { provider, balance, txs, setBalance, setTxs } = useWalletStore();
+  const { adapter, balance, txs, setBalance, setTxs } = useWalletStore();
   const [refreshing, setRefreshing] = useState(false);
 
   const refresh = async () => {
-    if (!provider) return;
+    if (!adapter) return;
     setRefreshing(true);
     try {
-      const bal = await getBalanceSats(provider);
+      const bal = await adapter.getBalance();
       setBalance(bal);
-      const list = await listTransactions(provider, 5);
+      const list = await adapter.listTransactions(5);
       setTxs(list);
     } catch {}
     setRefreshing(false);
@@ -27,7 +26,7 @@ export default function WalletPanel() {
     const id = setInterval(refresh, 30000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [provider]);
+  }, [adapter]);
 
   return (
     <div className="brut-panel p-4 space-y-4">
@@ -49,7 +48,9 @@ export default function WalletPanel() {
         <div className="font-mono text-3xl font-bold text-orange mt-1">
           {balance !== null ? balance.toLocaleString() : '—'}
         </div>
-        <div className="font-mono text-[10px] text-bone/50 mt-0.5">sats</div>
+        <div className="font-mono text-[10px] text-bone/50 mt-0.5">
+          sats {adapter ? `· ${adapter.kind === 'breez' ? 'Liquid · self-custodial' : 'NWC'}` : ''}
+        </div>
       </div>
 
       <div>

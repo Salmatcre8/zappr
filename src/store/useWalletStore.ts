@@ -1,15 +1,16 @@
 import { create } from 'zustand';
-import type { NwcProvider } from '@/lib/wallet/nwc';
+import type { WalletAdapter } from '@/lib/wallet/adapter';
 import type { WalletTx } from '@/types/wallet';
 
 type WalletState = {
-  provider: NwcProvider | null;
+  adapter: WalletAdapter | null;
+  /** NWC connection string, only present for kind='nwc' connections. */
   connectionString: string | null;
   balance: number | null;
   txs: WalletTx[];
   connecting: boolean;
   error: string | null;
-  setProvider: (p: NwcProvider, cs: string) => void;
+  setAdapter: (a: WalletAdapter, opts?: { connectionString?: string | null }) => void;
   setBalance: (b: number) => void;
   setTxs: (t: WalletTx[]) => void;
   setConnecting: (v: boolean) => void;
@@ -18,17 +19,18 @@ type WalletState = {
 };
 
 export const useWalletStore = create<WalletState>((set) => ({
-  provider: null,
+  adapter: null,
   connectionString: null,
   balance: null,
   txs: [],
   connecting: false,
   error: null,
-  setProvider: (p, cs) => set({ provider: p, connectionString: cs, error: null }),
+  setAdapter: (a, opts) =>
+    set({ adapter: a, connectionString: opts?.connectionString ?? null, error: null }),
   setBalance: (b) => set({ balance: b }),
   setTxs: (t) => set({ txs: t }),
   setConnecting: (v) => set({ connecting: v }),
   setError: (e) => set({ error: e }),
   reset: () =>
-    set({ provider: null, connectionString: null, balance: null, txs: [], error: null }),
+    set({ adapter: null, connectionString: null, balance: null, txs: [], error: null }),
 }));
