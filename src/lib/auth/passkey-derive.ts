@@ -60,7 +60,7 @@ export async function createPasskey(displayName: string): Promise<{
       ],
       authenticatorSelection: {
         userVerification: 'required',
-        residentKey: 'preferred',
+        residentKey: 'required',
       },
       timeout: 60_000,
       extensions: {
@@ -86,6 +86,43 @@ export async function createPasskey(displayName: string): Promise<{
     throw new Error('PRF extension not supported by this authenticator');
   }
 
+  return { credentialId, nostrPrf: first, liquidPrf: second };
+}
+
+/**
+ * Discover a passkey for this origin without knowing its credential id ahead
+ * of time — used for "log back in" / recovery when IndexedDB has been cleared
+ * (e.g. after a fresh logout, or browser data cleanup). Calls get() with an
+ * empty allowCredentials, which prompts the user to select any discoverable
+ * passkey for this rp.id. The passkey itself still lives in the device's
+ * platform authenticator (iCloud Keychain, Google Password Manager, etc.) —
+ * we just rediscover its credential id and re-evaluate PRF.
+ */
+export async function discoverPasskey(): Promise<{
+  credentialId: Uint8Array;
+  nostrPrf: ArrayBuffer;
+  liquidPrf: ArrayBuffer;
+}> {
+  const assertion = (await navigator.credentials.get({
+    publicKey: {
+      challenge: randomBytes(32) as any,
+      // Empty allowCredentials → user picks any passkey for this origin.
+      allowCredentials: [],
+      userVerification: 'required',
+      timeout: 60_000,
+      extensions: {
+        prf: { eval: { first: NOSTR_SALT as any, second: LIQUID_SALT as any } },
+      },
+    },
+  })) as PublicKeyCredential | null;
+
+  if (!assertion) throw new Error('Biometric cancelled');
+
+  const credentialId = new Uint8Array(assertion.rawId);
+  const { first, second } = readPrf(assertion);
+  if (!first || !second) {
+    throw new Error('PRF unlock failed — authenticator did not return key material');
+  }
   return { credentialId, nostrPrf: first, liquidPrf: second };
 }
 

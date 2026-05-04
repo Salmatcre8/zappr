@@ -7,7 +7,7 @@ import { truncateNpub } from '@/lib/nostr/keys';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
 import { clearSession } from '@/lib/auth/session';
-import { vaultClear } from '@/lib/auth/vault';
+import { vaultClear, vaultGet } from '@/lib/auth/vault';
 
 export default function TopBar() {
   const router = useRouter();
@@ -16,7 +16,19 @@ export default function TopBar() {
 
   const logout = async () => {
     clearSession();
-    await vaultClear();
+    // For derived-mode vaults the IndexedDB blob is just a public credential
+    // id — clearing it would block biometric re-login even though the passkey
+    // itself still lives on the device. Only wipe encrypted (legacy) vaults
+    // where the blob holds the encrypted nsec.
+    const blob = await vaultGet();
+    if (blob?.kind !== 'derived') {
+      await vaultClear();
+    }
+    if (adapter?.kind === 'breez') {
+      try {
+        await adapter.disconnect?.();
+      } catch {}
+    }
     resetNostr();
     resetWallet();
     router.replace('/login');

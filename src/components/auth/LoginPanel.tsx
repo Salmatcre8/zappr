@@ -19,11 +19,12 @@ import {
 import {
   createPasskey,
   assertPasskey,
+  discoverPasskey,
   deriveNsecFromPrf,
   deriveMnemonicFromPrf,
 } from '@/lib/auth/passkey-derive';
 
-type Mode = 'idle' | 'nsec' | 'nip07' | 'biometric' | 'fresh';
+type Mode = 'idle' | 'nsec' | 'nip07' | 'biometric' | 'fresh' | 'recover';
 
 export default function LoginPanel() {
   const router = useRouter();
@@ -150,6 +151,39 @@ export default function LoginPanel() {
     }
   };
 
+  // ---- Recover existing passkey wallet (no vault required) ----
+  const handleRecover = async () => {
+    setError(null);
+    setMode('recover');
+    try {
+      if (!breezEnabled) {
+        throw new Error('Seedless wallet unavailable — Breez API key not configured');
+      }
+      if (!isWebAuthnSupported()) {
+        throw new Error('WebAuthn not supported on this device');
+      }
+      const { credentialId, nostrPrf, liquidPrf } = await discoverPasskey();
+      const { nsec: derivedNsec, hex, npub } = deriveNsecFromPrf(nostrPrf);
+      const mnemonic = deriveMnemonicFromPrf(liquidPrf);
+
+      const ndk = await initNDK({ nsec: derivedNsec });
+      useNostrStore.getState().setNdk(ndk);
+      useNostrStore.getState().setIdentity(hex, npub);
+
+      try {
+        await hydrateBreez(mnemonic);
+      } catch (e) {
+        console.warn('Breez hydrate failed', e);
+      }
+      // Re-store credential id so future unlocks use the fast path.
+      await enrollDerivedVault(credentialId);
+      router.push('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Recovery failed');
+      setMode('idle');
+    }
+  };
+
   // ---- "Start fresh" — seedless passkey wallet ----
   const handleStartFresh = async () => {
     setError(null);
@@ -205,10 +239,29 @@ export default function LoginPanel() {
             New to Bitcoin? One tap creates a self-custodial Lightning wallet and
             Nostr identity. No seed phrase. No keys to copy.
           </p>
+
+          <button
+            type="button"
+            onClick={handleRecover}
+            disabled={busy}
+            className="brut-btn-ghost w-full flex items-center justify-center gap-2"
+          >
+            {mode === 'recover' ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Fingerprint className="w-4 h-4" />
+            )}
+            {mode === 'recover' ? 'Recovering…' : 'I already have a passkey wallet'}
+          </button>
+          <p className="text-[10px] font-mono text-bone/50 leading-relaxed">
+            Made one before on this device? Recover with your fingerprint — no
+            seed phrase needed.
+          </p>
+
           <div className="flex items-center gap-3 pt-1">
             <div className="flex-1 h-[2px] bg-black" />
             <span className="font-mono text-[10px] uppercase tracking-widest text-bone/50">
-              already have a wallet?
+              or use an existing identity
             </span>
             <div className="flex-1 h-[2px] bg-black" />
           </div>
