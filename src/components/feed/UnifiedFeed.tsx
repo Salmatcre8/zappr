@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useNostrStore } from '@/store/useNostrStore';
 import { fetchFeed, fetchFollowList, fetchProfile } from '@/lib/nostr/events';
+import { loadFollows, saveFollows } from '@/lib/nostr/follow-cache';
 import NoteCard from './NoteCard';
 import FollowCard from './FollowCard';
 import { Loader2, Radio, RefreshCw } from 'lucide-react';
@@ -14,18 +15,51 @@ export default function UnifiedFeed() {
   } = useNostrStore();
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = async (opts?: { useExistingFollows?: boolean }) => {
+  // Resolve which authors to fetch the feed for: prefer in-memory follows,
+  // then the local cache, then a relay-side kind:3 fetch. We always kick off
+  // a background relay reconciliation so other-client follows surface within
+  // seconds, but we never block the UI on it.
+  const resolveAuthors = async (): Promise<string[]> => {
+    if (!ndk || !pubkey) return [];
+    if (follows.length > 0) {
+      reconcileFollowsInBackground();
+      return follows;
+    }
+    const cached = loadFollows(pubkey);
+    if (cached && cached.follows.length > 0) {
+      setFollows(cached.follows);
+      reconcileFollowsInBackground(cached.eventCreatedAt);
+      return cached.follows;
+    }
+    const fresh = await fetchFollowList(ndk, pubkey);
+    if (fresh) {
+      setFollows(fresh.follows);
+      saveFollows(pubkey, fresh.follows, fresh.createdAt);
+      return fresh.follows;
+    }
+    return [];
+  };
+
+  // Fire-and-forget. Replaces the in-memory + cached follow list only if the
+  // relay returns a kind:3 event newer than what we already have.
+  const reconcileFollowsInBackground = (knownCreatedAt?: number) => {
+    if (!ndk || !pubkey) return;
+    fetchFollowList(ndk, pubkey)
+      .then((res) => {
+        if (!res) return;
+        if (knownCreatedAt && res.createdAt <= knownCreatedAt) return;
+        setFollows(res.follows);
+        saveFollows(pubkey, res.follows, res.createdAt);
+      })
+      .catch(() => {});
+  };
+
+  const load = async () => {
     if (!ndk || !pubkey) return;
     setLoadingFeed(true);
     try {
-      let authors = follows;
-      if (!opts?.useExistingFollows && authors.length === 0) {
-        authors = await fetchFollowList(ndk, pubkey);
-        setFollows(authors);
-      }
-      const notes = authors.length
-        ? await fetchFeed(ndk, authors, 40)
-        : [];
+      const authors = await resolveAuthors();
+      const notes = authors.length ? await fetchFeed(ndk, authors, 40) : [];
       setFeed(notes);
       const uniqueAuthors = Array.from(new Set(notes.map((n) => n.pubkey)));
       uniqueAuthors.slice(0, 30).forEach(async (p) => {
@@ -45,7 +79,7 @@ export default function UnifiedFeed() {
 
   const manualRefresh = async () => {
     setRefreshing(true);
-    await load({ useExistingFollows: true });
+    await load();
     setRefreshing(false);
   };
 
@@ -68,11 +102,7 @@ export default function UnifiedFeed() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {/* Always-visible follow card when the user has zero follows;
-            collapsed prompt otherwise. */}
-        {noFollows ? (
-          <FollowCard onChanged={manualRefresh} />
-        ) : null}
+        {noFollows ? <FollowCard onChanged={manualRefresh} /> : null}
 
         {loadingFeed && feed.length === 0 ? (
           <div className="flex items-center gap-2 justify-center py-12 font-mono text-xs text-bone/50">

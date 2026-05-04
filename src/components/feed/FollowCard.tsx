@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { UserPlus, Loader2, Check, AlertCircle } from 'lucide-react';
 import { useNostrStore } from '@/store/useNostrStore';
 import { publishContacts } from '@/lib/nostr/events';
+import { saveFollows } from '@/lib/nostr/follow-cache';
 import { npubToHex } from '@/lib/nostr/keys';
 
 type Suggested = {
@@ -22,7 +23,7 @@ const SUGGESTED: Suggested[] = [
 ];
 
 export default function FollowCard({ onChanged }: { onChanged?: () => void }) {
-  const { ndk, follows, setFollows } = useNostrStore();
+  const { ndk, pubkey, follows, setFollows } = useNostrStore();
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [okMsg, setOkMsg] = useState<string | null>(null);
@@ -52,8 +53,9 @@ export default function FollowCard({ onChanged }: { onChanged?: () => void }) {
         return;
       }
       const next = Array.from(new Set([...follows, hex]));
-      await publishContacts(ndk, next);
+      const { createdAt } = await publishContacts(ndk, next);
       setFollows(next);
+      if (pubkey) saveFollows(pubkey, next, createdAt);
       setInput('');
       setOkMsg('Followed. Refreshing feed…');
       onChanged?.();

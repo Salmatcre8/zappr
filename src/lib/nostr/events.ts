@@ -2,19 +2,25 @@ import NDK, { NDKEvent, NDKFilter, NDKKind, NDKUser } from '@nostr-dev-kit/ndk';
 import type { FeedNote, NostrProfile } from '@/types/nostr';
 import { hexToNpub } from './keys';
 
-export async function fetchFollowList(ndk: NDK, pubkey: string): Promise<string[]> {
+export async function fetchFollowList(
+  ndk: NDK,
+  pubkey: string
+): Promise<{ follows: string[]; createdAt: number } | null> {
   // Fetch all kind:3 events for the user across relays and pick the newest.
-  // Relays can return stale contact lists; taking [0] gives us arbitrary order.
+  // Relays can return stale contact lists, so we explicitly sort by created_at.
   const filter: NDKFilter = { kinds: [3 as NDKKind], authors: [pubkey] };
   const events = await ndk.fetchEvents(filter);
   const latest = Array.from(events).sort(
     (a, b) => (b.created_at || 0) - (a.created_at || 0)
   )[0];
-  if (!latest) return [];
+  if (!latest) return null;
   const pubs = latest.tags
     .filter((t) => t[0] === 'p' && typeof t[1] === 'string' && t[1].length === 64)
     .map((t) => t[1]);
-  return Array.from(new Set(pubs));
+  return {
+    follows: Array.from(new Set(pubs)),
+    createdAt: latest.created_at || 0,
+  };
 }
 
 export async function fetchFeed(
@@ -68,11 +74,14 @@ export async function publishNote(ndk: NDK, content: string): Promise<string> {
   return ev.id;
 }
 
-export async function publishContacts(ndk: NDK, pubkeys: string[]): Promise<string> {
+export async function publishContacts(
+  ndk: NDK,
+  pubkeys: string[]
+): Promise<{ id: string; createdAt: number }> {
   const ev = new NDKEvent(ndk);
   ev.kind = 3;
   ev.tags = pubkeys.map((p) => ['p', p]);
   ev.content = '';
   await ev.publish();
-  return ev.id;
+  return { id: ev.id, createdAt: ev.created_at || Math.floor(Date.now() / 1000) };
 }
