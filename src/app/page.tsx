@@ -32,7 +32,7 @@ export default function LandingPage() {
             <div className="md:col-span-3 space-y-6">
               <div className="inline-flex items-center gap-2 border-2 border-black bg-volt text-ink px-3 py-1 font-mono text-[10px] md:text-xs uppercase tracking-widest shadow-brut-sm">
                 <span className="w-1.5 h-1.5 bg-surface rounded-full animate-pulse" />
-                Hack4Freedom Lagos 2026
+                Self-custodial · multilingual
               </div>
               <h1 className="font-mono text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
                 Your <span className="bg-orange text-ink px-2 inline-block -rotate-1 border-2 border-black shadow-brut-sm">Bitcoin</span>

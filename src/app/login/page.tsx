@@ -27,9 +27,6 @@ export default function LoginPage() {
             </div>
           </div>
           <LoginPanel />
-          <p className="mt-6 text-xs text-bone/40 font-mono text-center">
-            Built for Hack4Freedom Lagos 2026
-          </p>
         </div>
       </div>
     </main>

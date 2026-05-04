@@ -4,8 +4,6 @@
 
 zappr is a self-custodial Bitcoin social + payments hub that unifies your Nostr feed, Lightning wallet, and an AI agent on a single screen — in any language.
 
-Built for **Hack4Freedom Lagos 2026**.
-
 ---
 
 ## What it does

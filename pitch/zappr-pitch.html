@@ -190,7 +190,7 @@
   </div>
   <div style="display:flex; justify-content:space-between; align-items:flex-end;">
     <div class="label-tiny" style="opacity:0.7;">Nostr · Lightning · AI</div>
-    <div class="num" style="position:static;">01 / 10</div>
+    <div class="num" style="position:static;">01 / 11</div>
   </div>
 </section>
 
@@ -212,7 +212,7 @@
   <p style="max-width: 7in;">
     That sentence is why zappr exists.
   </p>
-  <div class="num">02 / 10</div>
+  <div class="num">02 / 11</div>
 </section>
 
 <!-- 3. THE PROBLEM -->
@@ -238,7 +238,7 @@
       <p>"Easy" apps custody your keys. Sovereign apps are too technical. Nothing is both friendly <em>and</em> self-custodial.</p>
     </div>
   </div>
-  <div class="num">03 / 10</div>
+  <div class="num">03 / 11</div>
 </section>
 
 <!-- 4. WHO HURTS -->
@@ -269,7 +269,7 @@
     <div class="panel-dark"><h3>Merchants</h3><p style="margin-top:8px;">who need to ask "how much did I receive today?" — in Pidgin.</p></div>
     <div class="panel-dark"><h3>Newcomers</h3><p style="margin-top:8px;">who type "what is a zap?" and want a one-line answer in Hausa.</p></div>
   </div>
-  <div class="num">04 / 10</div>
+  <div class="num">04 / 11</div>
 </section>
 
 <!-- 5. THE INSIGHT -->
@@ -290,7 +290,7 @@
     <div class="panel"><h3>Zap</h3><p style="margin-top:8px;">Pay anyone, in two clicks.</p></div>
     <div class="panel"><h3>Ask</h3><p style="margin-top:8px;">In Yoruba. Swahili. Pidgin. Hausa.</p></div>
   </div>
-  <div class="num">05 / 10</div>
+  <div class="num">05 / 11</div>
 </section>
 
 <!-- 6. THE PRODUCT — onboarding magic + product surface -->
@@ -341,7 +341,7 @@
       <div style="background: #fff; color: var(--ink); border: 2px solid var(--bone); padding:6px; margin-top:6px; font-family:'Space Mono',monospace; font-size:10px;">You get 42,069 sats.</div>
     </div>
   </div>
-  <div class="num">06 / 10</div>
+  <div class="num">06 / 11</div>
 </section>
 
 <!-- 7. HOW IT WORKS -->
@@ -378,7 +378,7 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
       power users who want to graduate.
     </p>
   </div>
-  <div class="num">07 / 10</div>
+  <div class="num">07 / 11</div>
 </section>
 
 <!-- 8. DEMO MOMENTS -->
@@ -404,7 +404,7 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
       <div class="bubble agent"><div class="who">zappr</div>Zap jẹ́ ọ̀nà tí o fi ń fún ẹnìkan ní sats lórí Nostr — bí "tip".</div>
     </div>
   </div>
-  <div class="num">08 / 10</div>
+  <div class="num">08 / 11</div>
 </section>
 
 <!-- 9. WHY NOW -->
@@ -438,33 +438,87 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
       <p style="font-size:13px;">Africa pays the highest remittance fees on Earth. Lightning makes it 0.1%.</p>
     </div>
   </div>
-  <div class="num">09 / 10</div>
+  <div class="num">09 / 11</div>
 </section>
 
-<!-- 10. ASK / VISION -->
+<!-- 10. WHAT'S COMING -->
+<section class="slide">
+  <div class="stamp">what's coming</div>
+  <span class="eyebrow">Roadmap</span>
+  <h2 style="margin-top: 14px;">Shipped. Next. Vision.</h2>
+  <p style="margin-top: 6px; font-size: 13px; max-width: 7in;">
+    What's already in the demo, what comes right after, and where we're pointing.
+  </p>
+
+  <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; height: 5in;">
+    <!-- SHIPPED -->
+    <div style="background: #fff; border: 2px solid var(--ink); box-shadow: 4px 4px 0 0 var(--ink); padding: 14px; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <span class="chip" style="background: var(--volt); font-size: 9px;">✓ SHIPPED</span>
+      </div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55;">
+        <li>Seedless passkey wallet (Breez + PRF)</li>
+        <li>Self-custodial nsec from same passkey</li>
+        <li>BOLT11 receive with QR + agent help</li>
+        <li>Follow flow with kind:3 + local cache</li>
+        <li>AI agent in 18+ African languages</li>
+        <li>Send · zap · post via tool-use loop</li>
+        <li>BIP-39 mnemonic export</li>
+        <li>NIP-07 + nsec + NWC for power users</li>
+      </ul>
+    </div>
+
+    <!-- NEXT 30 DAYS -->
+    <div class="panel-dark" style="display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <span class="chip" style="background: var(--orange); font-size: 9px;">⚡ NEXT 30 DAYS</span>
+      </div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55; color: var(--bone);">
+        <li><strong style="color: var(--volt);">@you.zappr.app</strong> — pick a Lightning username, we host the LNURL endpoint that routes to your Breez wallet</li>
+        <li>Profile editing (avatar, lud16, bio) inside the app</li>
+        <li>Native zap UX in feed — slider, presets, custom amounts</li>
+        <li>Merchant POS mode — QR receive, daily reports</li>
+        <li>Send-sats button (currently agent-only)</li>
+      </ul>
+    </div>
+
+    <!-- NEXT 90 DAYS / VISION -->
+    <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--ink); box-shadow: 4px 4px 0 0 var(--ink); padding: 14px; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <span class="chip" style="background: var(--ink); color: var(--volt); font-size: 9px;">→ NEXT 90 DAYS</span>
+      </div>
+      <ul style="margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55;">
+        <li>Voice mode — speak in Pidgin / Yoruba / Swahili, agent replies aloud</li>
+        <li>Multi-device sync — passkey on phone + laptop, same wallet</li>
+        <li>Group wallets — split bills, shared zap pools for creators</li>
+        <li>Offline relay cache — feed loads on the bus</li>
+        <li>Tax-friendly daily summary in your language</li>
+      </ul>
+      <div style="margin-top: auto; padding-top: 12px; border-top: 2px solid var(--ink); font-family: 'Space Mono', monospace; font-size: 11px;">
+        Vision: the default Bitcoin app for the next billion — built in Lagos.
+      </div>
+    </div>
+  </div>
+
+  <div class="num">10 / 11</div>
+</section>
+
+<!-- 11. ASK -->
 <section class="slide cover">
   <div class="stamp">the ask</div>
   <div>
     <span class="pill-orange">Hack4Freedom Lagos 2026</span>
-    <h1 style="margin-top: 22px; font-size: 76px;">Win this.<br/>Then ship<br/>the rest.</h1>
-  </div>
-  <div class="grid-3" style="gap: 14px;">
-    <div style="background: var(--bone); color: var(--ink); border: 2px solid var(--bone); padding: 14px;">
-      <h3>Next 30 days</h3>
-      <p style="margin-top:8px; font-size: 14px;">Merchant POS mode. QR-pay flow. Yoruba + Swahili default locales.</p>
-    </div>
-    <div style="background: var(--bone); color: var(--ink); border: 2px solid var(--bone); padding: 14px;">
-      <h3>Next 90 days</h3>
-      <p style="margin-top:8px; font-size: 14px;">Group wallets. Voice mode in 10 African languages. Offline relay cache.</p>
-    </div>
-    <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--bone); padding: 14px;">
-      <h3>The vision</h3>
-      <p style="margin-top:8px; font-size: 14px;">The default Bitcoin app for the next billion — built in Lagos.</p>
-    </div>
+    <h1 style="margin-top: 22px; font-size: 84px;">Win this.<br/>Ship the rest.</h1>
+    <p class="tagline" style="margin-top: 18px; font-size: 18px;">
+      We're not pitching a prototype.<br/>
+      We're pitching a beachhead.
+    </p>
   </div>
   <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-    <div class="tagline" style="font-family:'Space Mono',monospace; font-size: 16px; color: var(--volt);">zappr.app · ⚡ talk to bitcoin</div>
-    <div class="num" style="position:static;">10 / 10</div>
+    <div class="tagline" style="font-family:'Space Mono',monospace; font-size: 16px; color: var(--volt);">
+      zappr.app · ⚡ talk to bitcoin
+    </div>
+    <div class="num" style="position:static;">11 / 11</div>
   </div>
 </section>
 
