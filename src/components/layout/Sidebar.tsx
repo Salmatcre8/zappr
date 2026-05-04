@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import WalletPanel from '@/components/wallet/WalletPanel';
 import ConnectWallet from '@/components/wallet/ConnectWallet';
+import ReceiveInvoiceCard from '@/components/wallet/ReceiveInvoiceCard';
 import BackupPhraseCard from '@/components/wallet/BackupPhraseCard';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useNostrStore } from '@/store/useNostrStore';
@@ -47,6 +48,7 @@ export default function Sidebar() {
       </div>
 
       {adapter ? <WalletPanel /> : <ConnectWallet />}
+      <ReceiveInvoiceCard />
       <BackupPhraseCard />
     </div>
   );

@@ -67,3 +67,12 @@ export async function publishNote(ndk: NDK, content: string): Promise<string> {
   await ev.publish();
   return ev.id;
 }
+
+export async function publishContacts(ndk: NDK, pubkeys: string[]): Promise<string> {
+  const ev = new NDKEvent(ndk);
+  ev.kind = 3;
+  ev.tags = pubkeys.map((p) => ['p', p]);
+  ev.content = '';
+  await ev.publish();
+  return ev.id;
+}

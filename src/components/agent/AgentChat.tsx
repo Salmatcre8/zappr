@@ -27,13 +27,25 @@ async function callAgent(messages: Msg[]) {
 }
 
 export default function AgentChat() {
-  const { messages, addMessage, setMessages, busy, setBusy, status, setStatus, pending, setPending } =
-    useAgentStore();
+  const {
+    messages, addMessage, setMessages, busy, setBusy, status, setStatus,
+    pending, setPending, queuedQuestion, clearQueuedQuestion,
+  } = useAgentStore();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, status, pending]);
+
+  // Pick up questions queued from elsewhere in the app (e.g. the
+  // "What's a BOLT11 invoice?" link on the receive card).
+  useEffect(() => {
+    if (queuedQuestion && !busy) {
+      handleSend(queuedQuestion);
+      clearQueuedQuestion();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queuedQuestion, busy]);
 
   const runLoop = async (initial: Msg[]) => {
     setBusy(true);

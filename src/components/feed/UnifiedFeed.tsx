@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useNostrStore } from '@/store/useNostrStore';
 import { fetchFeed, fetchFollowList, fetchProfile } from '@/lib/nostr/events';
 import NoteCard from './NoteCard';
+import FollowCard from './FollowCard';
 import { Loader2, Radio, RefreshCw } from 'lucide-react';
 
 export default function UnifiedFeed() {
@@ -13,21 +14,19 @@ export default function UnifiedFeed() {
   } = useNostrStore();
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = async () => {
+  const load = async (opts?: { useExistingFollows?: boolean }) => {
     if (!ndk || !pubkey) return;
     setLoadingFeed(true);
     try {
       let authors = follows;
-      if (authors.length === 0) {
+      if (!opts?.useExistingFollows && authors.length === 0) {
         authors = await fetchFollowList(ndk, pubkey);
         setFollows(authors);
       }
-      // If user follows no one, show a sample relay-wide recent fallback
       const notes = authors.length
         ? await fetchFeed(ndk, authors, 40)
-        : await fetchFeed(ndk, [pubkey], 20);
+        : [];
       setFeed(notes);
-      // Fetch profiles for visible authors
       const uniqueAuthors = Array.from(new Set(notes.map((n) => n.pubkey)));
       uniqueAuthors.slice(0, 30).forEach(async (p) => {
         if (profiles[p]) return;
@@ -46,9 +45,12 @@ export default function UnifiedFeed() {
 
   const manualRefresh = async () => {
     setRefreshing(true);
-    await load();
+    await load({ useExistingFollows: true });
     setRefreshing(false);
   };
+
+  const isEmpty = !loadingFeed && feed.length === 0;
+  const noFollows = follows.length === 0;
 
   return (
     <div className="brut-panel h-full flex flex-col">
@@ -66,16 +68,28 @@ export default function UnifiedFeed() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
+        {/* Always-visible follow card when the user has zero follows;
+            collapsed prompt otherwise. */}
+        {noFollows ? (
+          <FollowCard onChanged={manualRefresh} />
+        ) : null}
+
         {loadingFeed && feed.length === 0 ? (
           <div className="flex items-center gap-2 justify-center py-12 font-mono text-xs text-bone/50">
             <Loader2 className="w-4 h-4 animate-spin" /> Loading feed from relays…
           </div>
-        ) : feed.length === 0 ? (
-          <div className="py-12 text-center font-mono text-xs text-bone/50">
-            No notes. Try following someone on Nostr first.
+        ) : isEmpty ? (
+          <div className="py-8 text-center font-mono text-xs text-bone/50 space-y-1">
+            <div>Your feed is empty.</div>
+            {!noFollows && <div>Try refreshing — relays can be slow.</div>}
           </div>
         ) : (
-          feed.map((note) => <NoteCard key={note.id} note={note} />)
+          <>
+            {!noFollows && <FollowCard onChanged={manualRefresh} />}
+            {feed.map((note) => (
+              <NoteCard key={note.id} note={note} />
+            ))}
+          </>
         )}
       </div>
     </div>
