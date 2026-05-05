@@ -359,8 +359,8 @@
       <p style="font-size:13px;">Lightning + Liquid in the browser via WASM. Seedless wallets.</p>
     </div>
     <div class="panel stack">
-      <h3 style="color: var(--orange);">NWC</h3>
-      <p style="font-size:13px;">Power users bring Alby, Mutiny, Primal. One string, plug in.</p>
+      <h3 style="color: var(--orange);">MavaPay</h3>
+      <p style="font-size:13px;">Lightning ↔ NGN bank rail. Cash out (staging live) → onramp next.</p>
     </div>
     <div class="panel stack">
       <h3 style="color: var(--orange);">Claude Agent</h3>
@@ -385,15 +385,11 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
 <section class="slide">
   <div class="stamp">demo moments</div>
   <span class="eyebrow">Live on stage</span>
-  <h2 style="margin-top: 18px;">One tap. Three languages. Zero friction.</h2>
-  <div class="stack" style="margin-top: 22px;">
+  <h2 style="margin-top: 18px;">One tap. Many languages. Real money.</h2>
+  <div class="stack" style="margin-top: 18px;">
     <div class="grid-2">
       <div class="bubble user" style="background: var(--orange);"><div class="who">user · onboarding</div>👆 (taps fingerprint)</div>
       <div class="bubble agent"><div class="who">zappr</div>Wallet ready. Welcome to Bitcoin. ⚡</div>
-    </div>
-    <div class="grid-2">
-      <div class="bubble user"><div class="who">user · english</div>check my balance</div>
-      <div class="bubble agent"><div class="who">zappr</div>You have 42,069 sats. ⚡</div>
     </div>
     <div class="grid-2">
       <div class="bubble user"><div class="who">user · pidgin</div>abeg send 500 sats give @jack</div>
@@ -403,6 +399,13 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
       <div class="bubble user"><div class="who">user · yoruba</div>kí ni zap?</div>
       <div class="bubble agent"><div class="who">zappr</div>Zap jẹ́ ọ̀nà tí o fi ń fún ẹnìkan ní sats lórí Nostr — bí "tip".</div>
     </div>
+    <div class="grid-2">
+      <div class="bubble user" style="background: var(--volt);"><div class="who">user · pidgin · cashout</div>send 2000 naira give 8117312955 OPAY</div>
+      <div class="bubble agent" style="background: var(--ink); color: var(--bone);"><div class="who" style="color: var(--volt);">zappr</div>Quote: ₦2,000 → 1,247 sats. Bank: OPAY · 8117312955. Approve?</div>
+    </div>
+  </div>
+  <div style="margin-top: 12px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink); opacity: 0.55; text-align: right;">
+    NGN cashout via MavaPay (staging) — production keys next 30 days
   </div>
   <div class="num">08 / 11</div>
 </section>
@@ -459,12 +462,13 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
       <ul style="margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55;">
         <li>Seedless passkey wallet (Breez + PRF)</li>
         <li>Self-custodial nsec from same passkey</li>
-        <li>BOLT11 receive with QR + agent help</li>
+        <li>Receive · Send · BOLT11 + QR</li>
         <li>Follow flow with kind:3 + local cache</li>
         <li>AI agent in 18+ African languages</li>
-        <li>Send · zap · post via tool-use loop</li>
+        <li>Zap · post via tool-use loop</li>
         <li>BIP-39 mnemonic export</li>
         <li>NIP-07 + nsec + NWC for power users</li>
+        <li><strong style="color: var(--orange);">Sats → NGN bank cashout via agent</strong> <span style="opacity: 0.6;">(MavaPay staging)</span></li>
       </ul>
     </div>
 
@@ -474,11 +478,12 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
         <span class="chip" style="background: var(--orange); font-size: 9px;">⚡ NEXT 30 DAYS</span>
       </div>
       <ul style="margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55; color: var(--bone);">
-        <li><strong style="color: var(--volt);">@you.zappr.app</strong> — pick a Lightning username, we host the LNURL endpoint that routes to your Breez wallet</li>
+        <li><strong style="color: var(--volt);">MavaPay production keys</strong> — flip the offramp from staging to live NGN payouts</li>
+        <li><strong style="color: var(--volt);">NGN → sats onramp</strong> — fund your wallet from a Nigerian bank transfer, in your language, in the chat</li>
+        <li><strong style="color: var(--volt);">@you.zappr.app</strong> — pick a Lightning username, we host the LNURL endpoint</li>
         <li>Profile editing (avatar, lud16, bio) inside the app</li>
         <li>Native zap UX in feed — slider, presets, custom amounts</li>
         <li>Merchant POS mode — QR receive, daily reports</li>
-        <li>Send-sats button (currently agent-only)</li>
       </ul>
     </div>
 
@@ -492,7 +497,7 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
         <li>Multi-device sync — passkey on phone + laptop, same wallet</li>
         <li>Group wallets — split bills, shared zap pools for creators</li>
         <li>Offline relay cache — feed loads on the bus</li>
-        <li>Tax-friendly daily summary in your language</li>
+        <li>Cross-border ramps — KES, GHS, ZAR via the same MavaPay rails</li>
       </ul>
       <div style="margin-top: auto; padding-top: 12px; border-top: 2px solid var(--ink); font-family: 'Space Mono', monospace; font-size: 11px;">
         Vision: the default Bitcoin app for the next billion — built in Lagos.
