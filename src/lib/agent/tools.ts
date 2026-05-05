@@ -60,6 +60,57 @@ export const AGENT_TOOLS: Anthropic.Tool[] = [
       required: ['content'],
     },
   },
+  {
+    name: 'quote_offramp_ngn',
+    description:
+      "Get a quote for converting Lightning sats to Nigerian naira (NGN), paid into a bank account via MavaPay. Use this whenever the user wants to cash out, withdraw to bank, or 'send sats and receive naira'. This is read-only — it just creates a quote. No payment happens until the user approves execute_offramp_ngn.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        amount_ngn: {
+          type: 'number',
+          description: 'Amount of Nigerian naira (NGN) to receive in the bank. Minimum 2000 NGN.',
+        },
+        account_number: {
+          type: 'string',
+          description: '10-digit Nigerian bank account number',
+        },
+        bank: {
+          type: 'string',
+          description: 'Bank name (e.g. "GTBank", "OPAY", "Access Bank", "Kuda Bank"). Will be matched against MavaPay\'s NIP bank list.',
+        },
+        account_name: {
+          type: 'string',
+          description: 'Optional account holder name. If omitted, MavaPay name-enquiry is attempted.',
+        },
+      },
+      required: ['amount_ngn', 'account_number', 'bank'],
+    },
+  },
+  {
+    name: 'execute_offramp_ngn',
+    description:
+      'Execute a previously-created NGN offramp quote: pay the Lightning invoice from the user wallet, which triggers MavaPay to send NGN to the bank. Requires user confirmation before running. Use the values returned by quote_offramp_ngn.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        quote_id: { type: 'string', description: 'id from quote_offramp_ngn' },
+        order_id: { type: 'string', description: 'order_id from quote_offramp_ngn' },
+        invoice: { type: 'string', description: 'Lightning BOLT11 invoice to pay' },
+        sats_to_send: { type: 'number', description: 'Total sats that will leave the wallet (incl. fee)' },
+        ngn_to_receive: { type: 'number', description: 'NGN that will land in the bank' },
+        bank_name: { type: 'string', description: 'Resolved bank name' },
+        account_number: { type: 'string', description: 'Account number' },
+        account_name: { type: 'string', description: 'Account holder name' },
+      },
+      required: ['quote_id', 'order_id', 'invoice', 'sats_to_send'],
+    },
+  },
 ];
 
-export const CONFIRM_TOOLS = new Set(['send_payment', 'zap_note', 'post_note']);
+export const CONFIRM_TOOLS = new Set([
+  'send_payment',
+  'zap_note',
+  'post_note',
+  'execute_offramp_ngn',
+]);

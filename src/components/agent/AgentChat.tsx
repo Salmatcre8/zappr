@@ -69,7 +69,7 @@ export default function AgentChat() {
         if (needsConfirm) {
           setPending({
             id: crypto.randomUUID(),
-            tool: needsConfirm.name as 'send_payment' | 'zap_note' | 'post_note',
+            tool: needsConfirm.name as 'send_payment' | 'zap_note' | 'post_note' | 'execute_offramp_ngn',
             input: needsConfirm.input,
             toolUseId: needsConfirm.id,
           });
@@ -185,11 +185,26 @@ export default function AgentChat() {
         {pending && (
           <div className="bg-surface border-2 border-orange p-3 shadow-brut-orange">
             <div className="font-mono text-[10px] uppercase tracking-widest text-orange mb-2">
-              Confirm {pending.tool.replace('_', ' ')}
+              Confirm {pending.tool.replace(/_/g, ' ')}
             </div>
-            <pre className="font-mono text-[11px] text-bone/80 whitespace-pre-wrap break-all mb-3">
-              {JSON.stringify(pending.input, null, 2)}
-            </pre>
+
+            {pending.tool === 'execute_offramp_ngn' ? (
+              <div className="space-y-1.5 mb-3 font-mono text-[11px] text-bone/90">
+                <Row label="You send" value={`${Number(pending.input.sats_to_send || 0).toLocaleString()} sats`} accent />
+                <Row label="They receive" value={`₦${Number(pending.input.ngn_to_receive || 0).toLocaleString()}`} accent />
+                <div className="h-px bg-line my-1" />
+                <Row label="Bank" value={String(pending.input.bank_name || '—')} />
+                <Row label="Account" value={String(pending.input.account_number || '—')} />
+                {pending.input.account_name ? (
+                  <Row label="Name" value={String(pending.input.account_name)} />
+                ) : null}
+              </div>
+            ) : (
+              <pre className="font-mono text-[11px] text-bone/80 whitespace-pre-wrap break-all mb-3">
+                {JSON.stringify(pending.input, null, 2)}
+              </pre>
+            )}
+
             <div className="flex gap-2">
               <button
                 onClick={() => handleConfirm(true)}
@@ -216,5 +231,18 @@ export default function AgentChat() {
 
       <AgentInput onSend={handleSend} />
     </>
+  );
+}
+
+function Row({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="text-[10px] uppercase tracking-widest text-bone/50">{label}</span>
+      <span
+        className={`text-right break-all ${accent ? 'text-orange font-bold' : 'text-bone/90'}`}
+      >
+        {value}
+      </span>
+    </div>
   );
 }

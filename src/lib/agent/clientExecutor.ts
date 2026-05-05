@@ -66,6 +66,57 @@ export async function executeTool(name: string, input: Record<string, unknown>):
       const id = await publishNote(nostr.ndk, content);
       return { success: true, event_id: id };
     }
+    case 'quote_offramp_ngn': {
+      const res = await fetch('/api/offramp/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount_ngn: Number(input.amount_ngn || 0),
+          account_number: String(input.account_number || ''),
+          bank: String(input.bank || ''),
+          account_name: input.account_name ? String(input.account_name) : undefined,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) return { error: body?.error || 'Quote failed' };
+      return body;
+    }
+    case 'execute_offramp_ngn': {
+      if (!wallet.adapter) return { error: 'Wallet not connected' };
+      const invoice = String(input.invoice || '');
+      const orderId = String(input.order_id || '');
+      if (!invoice) return { error: 'Missing invoice' };
+
+      // Pay the Lightning invoice from the user's wallet — this is what
+      // triggers MavaPay to release the NGN payout.
+      const payRes = await wallet.adapter.payInvoice(invoice);
+
+      // Poll status for ~30s. Real settlement may take longer; we surface
+      // whatever state MavaPay reports so the agent can speak to the user.
+      let finalStatus: unknown = null;
+      if (orderId) {
+        const deadline = Date.now() + 30_000;
+        while (Date.now() < deadline) {
+          try {
+            const sres = await fetch(
+              `/api/offramp/status?order_id=${encodeURIComponent(orderId)}`
+            );
+            if (sres.ok) {
+              const sbody = await sres.json();
+              finalStatus = sbody;
+              if (sbody?.status === 'sent' || sbody?.status === 'paid') break;
+            }
+          } catch {}
+          await new Promise((r) => setTimeout(r, 3_000));
+        }
+      }
+      return {
+        success: true,
+        preimage: payRes.preimage,
+        order_id: orderId,
+        status: finalStatus,
+      };
+    }
     default:
       return { error: `Unknown tool: ${name}` };
   }

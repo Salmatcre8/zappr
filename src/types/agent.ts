@@ -10,7 +10,7 @@ export type AgentMessage = {
 
 export type PendingConfirmation = {
   id: string;
-  tool: 'send_payment' | 'zap_note' | 'post_note';
+  tool: 'send_payment' | 'zap_note' | 'post_note' | 'execute_offramp_ngn';
   input: Record<string, unknown>;
   toolUseId: string;
 };
