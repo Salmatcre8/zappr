@@ -2,21 +2,21 @@
 
 > **Bitcoin you can talk to, in the language you think in.**
 
-zappr is a self-custodial Bitcoin social + payments hub that unifies your Nostr feed, Lightning wallet, and an AI agent on a single screen — in any language.
+![zappr landing page](<img width="1362" height="640" alt="WhatsApp Image 2026-05-23 at 11 22 01 PM" src="https://github.com/user-attachments/assets/15e60c68-dcc2-4357-978e-5293e2f82b39" />
+)
+
+zappr unifies your Nostr feed, Lightning wallet, and AI agent into one self-custodial interface.
+Ask. Pay. Zap. In any language you think in.
 
 ---
 
-## What it does
+## Why zappr exists
 
-| Feature | Detail |
-|---|---|
-| **Nostr feed** | Reads your social graph, renders notes in real time via NDK |
-| **Lightning wallet** | Connect any NWC-compatible wallet (Alby, Mutiny, Primal) **or** create one from your fingerprint via Breez SDK + Liquid |
-| **AI agent** | Ask about balance, zap posts, send payments, post notes — in English, Pidgin, Yoruba, Hausa, Swahili, and more |
-| **Self-custodial** | Your nsec never leaves the browser. No server holds your keys |
-| **Seedless onboarding** | Tap fingerprint → fresh Lightning wallet + Nostr identity, deterministically derived via WebAuthn PRF. No seed phrase to copy |
-| **Biometric vault** | WebAuthn PRF + AES-GCM encrypts your nsec in IndexedDB. Fingerprint/Face ID unlocks it |
-| **Four login paths** | Seedless passkey · biometric vault · NIP-07 extension · direct nsec |
+Bitcoin onboarding is still difficult for many everyday users.
+
+Between seed phrases, multiple tools, unfamiliar terminology, and language barriers, new users can feel overwhelmed before they even send their first sat.
+
+zappr simplifies that experience by combining Nostr, Lightning, and conversational AI into one self-custodial interface — accessible in the languages people already think in.
 
 ---
 
@@ -34,6 +34,22 @@ zappr:          [shows confirm card] "Send 500 sats to @jack?"
 ```
 
 ---
+
+## What it does
+
+| Feature | Detail |
+|---|---|
+| **Nostr feed** | Reads your social graph, renders notes in real time via NDK |
+| **Lightning wallet** | Connect any NWC-compatible wallet (Alby, Mutiny, Primal) **or** create one from your fingerprint via Breez SDK + Liquid |
+| **AI agent** | Ask about balance, zap posts, send payments, post notes — in English, Pidgin, Yoruba, Hausa, Swahili, and more |
+| **Self-custodial** | Your nsec never leaves the browser. No server holds your keys |
+| **Seedless onboarding** | Tap fingerprint → fresh Lightning wallet + Nostr identity, deterministically derived via WebAuthn PRF. No seed phrase to copy |
+| **Biometric vault** | WebAuthn PRF + AES-GCM encrypts your nsec in IndexedDB. Fingerprint/Face ID unlocks it |
+| **Four login paths** | Seedless passkey · biometric vault · NIP-07 extension · direct nsec |
+
+---
+
+Under the hood, zappr keeps keys client-side while AI orchestration happens through a secure tool loop.
 
 ## Architecture
 
@@ -316,6 +332,27 @@ Bitcoin/Lightning terms (`sats`, `zap`, `npub`, `invoice`, `NWC`) are kept in th
 
 ---
 
+## Future roadmap
+
+- Voice conversations with Bitcoin AI
+- AI-powered onboarding hints
+- Contextual “Did you know?” education prompts
+- Conversational Lightning payments
+- Nostr discovery assistant
+- Merchant payment flows
+
+---
+
+## Security Notes
+
+- Private keys never leave the browser
+- Payments always require explicit user confirmation
+- No biometric data is stored by zappr
+- Passkeys are managed by the device operating system
+- Anthropic API calls are proxied server-side without exposing user keys
+
+  ---
+  
 ## License
 
 MIT
