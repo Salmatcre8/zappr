@@ -359,9 +359,13 @@ Bitcoin/Lightning terms (`sats`, `zap`, `npub`, `invoice`, `NWC`) are kept in th
 Zappr is built with security and self-custody at its core.
 
 • Private keys never leave the user’s device: generated and stored locally within the browser.
+
 • Payments are always intentional: every transaction requires explicit user approval before execution.
+
 • Biometric data remains private: Zappr does not collect or store fingerprints, Face ID data, or other biometrics.
+
 • Passkey authentication is device-native : managed securely by the operating system using industry-standard protocols.
+
 • Secure server-side API proxying: Anthropic API requests are routed through the backend without exposing user keys or credentials.
 
 
