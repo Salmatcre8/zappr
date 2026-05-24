@@ -23,11 +23,12 @@ Ask. Pay. Zap. In any language you think in.
 
 ## Why zappr exists
 
-Bitcoin has a usability problem.
 
-For many everyday users,onboarding remains complex and intimidating-requiring multiple tools,technical knowledge,and navigation through unfamiliar terms and workflows.
+Bitcoin onboarding is still difficult for many everyday users.
 
-Zappr solves this by unifying Nostr, Lightning, and conversational AI into a single self-custodial interface, making Bitcoin accessible through natural conversation and in the languages people already use every day.
+Between seed phrases, multiple tools, unfamiliar terminology, and language barriers, new users can feel overwhelmed before they even send their first sat.
+
+zappr simplifies that experience by combining Nostr, Lightning, and conversational Al into one self-custodial interface - accessible in the languages people already think in.
 
 ---
 
