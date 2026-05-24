@@ -372,7 +372,6 @@ Zappr is built with security and self-custody at its core.
 
 
   ---
-  ![zappr demo] (https://media3.giphy.com/media/6ZPT33soTD8ZhNkl2E/giphy.gif?cid=9b38fe91fci3f961r6iqcanjeoia0gxrgih8ud9z8kwmzpeh&ep=v1_gifs_username&rid=giphy.gif&ct=g)
   
 ## License
 
