@@ -27,7 +27,7 @@ Bitcoin has a usability problem.
 
 For many everyday users,onboarding remains complex and intimidating-requiring multiple tools,technical knowledge,and navigation through unfamiliar terms and workflows.
 
-Zappr solves this by unifying Nostr, Lightning, and conversational AI into a single self-custodial interface, making Bitcoin accessible through natural conversation and in the languages people already use every da
+Zappr solves this by unifying Nostr, Lightning, and conversational AI into a single self-custodial interface, making Bitcoin accessible through natural conversation and in the languages people already use every day.
 
 ---
 
