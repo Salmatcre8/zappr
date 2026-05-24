@@ -2,10 +2,21 @@
 
 > **Bitcoin you can talk to, in the language you think in.**
 
-![zappr landing page](<img width="1362" height="640" alt="WhatsApp Image 2026-05-23 at 11 22 01 PM" src="https://github.com/user-attachments/assets/15e60c68-dcc2-4357-978e-5293e2f82b39" />
-)
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/fdfa9e85-8a0f-47a1-af37-0e5f0352522b" width="100%" />
+      <p><b>Dark Mode</b></p>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/97066633-a70e-4a0d-ba82-02ae8b0fa455" width="100%" />
+      <p><b>Light Mode</b></p>
+    </td>
+  </tr>
+</table>
 
 zappr unifies your Nostr feed, Lightning wallet, and AI agent into one self-custodial interface.
+
 Ask. Pay. Zap. In any language you think in.
 
 ---
