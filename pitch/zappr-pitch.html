@@ -164,6 +164,17 @@
   .bubble.agent { background: #fff; }
   .bubble .who { font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.6; margin-bottom: 4px; }
 
+  /* Numbered feature row */
+  .feat { display: flex; gap: 12px; align-items: flex-start; }
+  .feat .n {
+    font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px;
+    background: var(--ink); color: var(--volt);
+    min-width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--ink);
+  }
+  .feat .t { font-size: 14px; line-height: 1.4; }
+  .feat .t strong { font-family: 'Space Mono', monospace; }
+
   /* Print: one slide per page, no shadows around the page */
   @page { size: 10in 7.5in; margin: 0; }
   @media print {
@@ -189,204 +200,104 @@
     <p class="tagline" style="margin-top: 18px;">Bitcoin you can talk to,<br/>in the language you think in.</p>
   </div>
   <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-    <div class="label-tiny" style="opacity:0.7;">Nostr · Lightning · AI</div>
-    <div class="num" style="position:static;">01 / 11</div>
+    <div>
+      <div class="label-tiny" style="opacity:0.7; margin-bottom: 10px;">Hack4Freedom · Powered by Evento</div>
+      <div style="font-family:'Space Mono',monospace; font-size: 12px; line-height: 1.7; color: var(--bone);">
+        Abdullahi Ummu Salmat <span style="opacity:0.55;">— Product Manager &amp; Backend</span><br/>
+        Ibrahim Ashiah Adejoke <span style="opacity:0.55;">— Product Designer</span><br/>
+        Adegboye Oluwadarasimi Busayomi <span style="opacity:0.55;">— Frontend</span>
+      </div>
+    </div>
+    <div class="num" style="position:static;">01 / 08</div>
   </div>
 </section>
 
-<!-- 2. THE MOMENT -->
-<section class="slide">
-  <div class="stamp">the moment</div>
-  <span class="eyebrow">Origin story</span>
-  <h2 style="margin-top: 18px;">A friend, a phone, and forty wasted minutes.</h2>
-  <div style="margin-top: 26px;" class="quote">
-    "She finally got the payment to land,<br/>
-    looked up at me, and said —<br/>
-    <span style="color: var(--orange);">'this is supposed to be the future?'"</span>
-  </div>
-  <p style="margin-top: 26px; max-width: 7in;">
-    A small-business owner in Lagos was paid in Bitcoin for the first time. It took
-    three apps, a YouTube tutorial, and a WhatsApp guide who kept sending links she
-    didn't understand. The payment worked. The experience didn't.
-  </p>
-  <p style="max-width: 7in;">
-    That sentence is why zappr exists.
-  </p>
-  <div class="num">02 / 11</div>
-</section>
-
-<!-- 3. THE PROBLEM -->
+<!-- 2. THE PROBLEM -->
 <section class="slide">
   <div class="stamp">the problem</div>
-  <span class="eyebrow">What's broken</span>
-  <h2 style="margin-top: 18px;">Bitcoin works. The experience doesn't.</h2>
-  <div class="grid-2" style="margin-top: 28px;">
-    <div class="panel stack">
-      <h3>Fragmented</h3>
-      <p>Wallet in one app. Social in another. Help in a third. Three logins, three contexts, zero memory between them.</p>
-    </div>
-    <div class="panel stack">
-      <h3>English-only</h3>
-      <p>Every Bitcoin tool ships in English first. A Yoruba trader has to think in a second language to send money.</p>
-    </div>
-    <div class="panel stack">
-      <h3>Jargon wall</h3>
-      <p>Lightning. NWC. zaps. nsec. The vocabulary alone filters out 95% of would-be users.</p>
-    </div>
-    <div class="panel stack">
-      <h3>False choice</h3>
-      <p>"Easy" apps custody your keys. Sovereign apps are too technical. Nothing is both friendly <em>and</em> self-custodial.</p>
-    </div>
-  </div>
-  <div class="num">03 / 11</div>
-</section>
+  <span class="eyebrow">The problem</span>
+  <h2 style="margin-top: 16px;">Bitcoin works. The experience doesn't.</h2>
 
-<!-- 4. WHO HURTS -->
-<section class="slide">
-  <div class="stamp">who hurts</div>
-  <span class="eyebrow">The audience</span>
-  <h2 style="margin-top: 18px;">1.4 billion people. 2,000+ languages. One Bitcoin.</h2>
-  <div class="grid-4" style="margin-top: 32px;">
-    <div class="panel">
-      <div class="big-number" style="color: var(--orange);">1.4B</div>
-      <div class="label-tiny" style="margin-top: 6px;">people across Africa</div>
-    </div>
-    <div class="panel">
-      <div class="big-number" style="color: var(--orange);">2k+</div>
-      <div class="label-tiny" style="margin-top: 6px;">spoken languages</div>
-    </div>
-    <div class="panel">
-      <div class="big-number" style="color: var(--orange);">8%+</div>
-      <div class="label-tiny" style="margin-top: 6px;">avg remittance fee</div>
-    </div>
-    <div class="panel">
-      <div class="big-number" style="color: var(--orange);">0</div>
-      <div class="label-tiny" style="margin-top: 6px;">unified BTC apps in native langs</div>
-    </div>
+  <div style="margin-top: 18px;" class="quote">
+    A Lagos merchant, paid in Bitcoin for the first time, finally got it to land —<br/>
+    looked up and said: <span style="color: var(--orange);">"this is supposed to be the future?"</span>
   </div>
-  <div style="margin-top: 30px;" class="grid-3">
-    <div class="panel-dark"><h3>Creators</h3><p style="margin-top:8px;">who want to be tipped without leaving the conversation.</p></div>
-    <div class="panel-dark"><h3>Merchants</h3><p style="margin-top:8px;">who need to ask "how much did I receive today?" — in Pidgin.</p></div>
-    <div class="panel-dark"><h3>Newcomers</h3><p style="margin-top:8px;">who type "what is a zap?" and want a one-line answer in Hausa.</p></div>
-  </div>
-  <div class="num">04 / 11</div>
-</section>
-
-<!-- 5. THE INSIGHT -->
-<section class="slide">
-  <div class="stamp">the insight</div>
-  <span class="eyebrow">Why now is different</span>
-  <h2 style="margin-top: 18px;">The unlock isn't a better wallet.</h2>
-  <h2 style="color: var(--orange); margin-top: 6px;">It's one surface.</h2>
-  <div style="margin-top: 36px; max-width: 7.4in;">
-    <p style="font-size: 19px; line-height: 1.5;">
-      Stop asking people to learn three apps. Put the wallet, the social feed,
-      and a Bitcoin-native AI guide on <strong>one screen</strong> — and let the guide
-      speak whatever language the user walked in with.
-    </p>
-  </div>
-  <div style="margin-top: 30px;" class="grid-3">
-    <div class="panel"><h3>Read</h3><p style="margin-top:8px;">Your Nostr feed, live.</p></div>
-    <div class="panel"><h3>Zap</h3><p style="margin-top:8px;">Pay anyone, in two clicks.</p></div>
-    <div class="panel"><h3>Ask</h3><p style="margin-top:8px;">In Yoruba. Swahili. Pidgin. Hausa.</p></div>
-  </div>
-  <div class="num">05 / 11</div>
-</section>
-
-<!-- 6. THE PRODUCT — onboarding magic + product surface -->
-<section class="slide">
-  <div class="stamp">the product</div>
-  <span class="eyebrow">The whole onboarding flow</span>
-  <h2 style="margin-top: 14px;">Tap fingerprint. You&apos;re in.</h2>
-  <p style="margin-top: 8px; max-width: 7in; font-size: 14px;">
-    Beginners don&apos;t get a seed phrase, an nsec, or an NWC string. The passkey
-    on their device <em>becomes</em> the wallet — same fingerprint, deterministic key,
-    self-custodial, on the web.
+  <p style="margin-top: 12px; max-width: 8in; font-size: 14px;">
+    It took three apps, a YouTube tutorial, and a WhatsApp helper sending links she
+    couldn't read. The payment worked. The experience didn't. That sentence is why zappr exists.
   </p>
 
-  <div style="margin-top: 18px; display:grid; grid-template-columns: 1fr 36px 1fr 36px 1fr; gap: 8px; align-items: center;">
-    <div class="panel" style="text-align:center; padding: 14px 10px;">
-      <div style="font-size: 42px; line-height: 1;">👆</div>
-      <h3 style="margin-top: 8px;">Step 1</h3>
-      <p style="margin-top:6px; font-size: 12px;">Tap &ldquo;Create with FaceID&rdquo;</p>
-    </div>
-    <div style="text-align:center; font-size: 28px; color: var(--orange);">→</div>
-    <div class="panel" style="text-align:center; padding: 14px 10px; background: var(--volt);">
-      <div style="font-size: 42px; line-height: 1;">🔐</div>
-      <h3 style="margin-top: 8px;">Step 2</h3>
-      <p style="margin-top:6px; font-size: 12px;">Passkey&apos;s PRF derives nsec + Lightning seed</p>
-    </div>
-    <div style="text-align:center; font-size: 28px; color: var(--orange);">→</div>
-    <div class="panel-dark" style="text-align:center; padding: 14px 10px;">
-      <div style="font-size: 42px; line-height: 1;">⚡</div>
-      <h3 style="margin-top: 8px;">Step 3</h3>
-      <p style="margin-top:6px; font-size: 12px; color: var(--bone);">Wallet + Nostr identity, ready to use</p>
-    </div>
+  <div class="grid-4" style="margin-top: 18px;">
+    <div class="panel" style="padding: 14px;"><h3 style="font-size:15px;">Fragmented</h3><p style="margin-top:8px; font-size:12px;">Wallet, social, and help live in three separate apps with zero memory between them.</p></div>
+    <div class="panel" style="padding: 14px;"><h3 style="font-size:15px;">English-only</h3><p style="margin-top:8px; font-size:12px;">Every Bitcoin tool ships in English first. A Yoruba trader must think in a second language to send money.</p></div>
+    <div class="panel" style="padding: 14px;"><h3 style="font-size:15px;">Jargon wall</h3><p style="margin-top:8px; font-size:12px;">Lightning, NWC, zaps, nsec — the vocabulary alone filters out most would-be users.</p></div>
+    <div class="panel" style="padding: 14px;"><h3 style="font-size:15px;">False choice</h3><p style="margin-top:8px; font-size:12px;">"Easy" apps custody your keys. Sovereign apps are too technical. Nothing is both.</p></div>
   </div>
 
-  <div style="margin-top: 18px; display:grid; grid-template-columns: 1.4fr 1.6fr 1.2fr; gap: 12px; height: 2.4in; border: 2px solid var(--ink); box-shadow: 5px 5px 0 0 var(--ink); padding: 12px; background: #fff;">
-    <div style="background: var(--bone); border: 2px solid var(--ink); padding: 10px;">
-      <div class="label-tiny">Wallet</div>
-      <div style="font-family: 'Space Mono', monospace; font-size: 24px; font-weight:700; margin-top: 6px;">42,069 <span style="font-size:11px;">sats</span></div>
-      <div class="chip" style="margin-top: 10px; font-size: 9px;">⚡ SELF-CUSTODIAL</div>
-    </div>
-    <div style="background: var(--bone); border: 2px solid var(--ink); padding: 10px;">
-      <div class="label-tiny">Feed</div>
-      <div style="background:#fff; border:2px solid var(--ink); padding:6px; margin-top:6px; font-size:10px;">@jack: ⚡ relays humming</div>
-      <div style="background:var(--volt); border:2px solid var(--ink); padding:6px; margin-top:6px; font-size:10px;">@you: testing zappr from lagos</div>
-    </div>
-    <div style="background: var(--ink); color: var(--bone); border: 2px solid var(--ink); padding: 10px;">
-      <div class="label-tiny" style="color: var(--volt);">Agent · Pidgin</div>
-      <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--bone); padding:6px; margin-top:6px; font-family:'Space Mono',monospace; font-size:10px;">abeg check my balance</div>
-      <div style="background: #fff; color: var(--ink); border: 2px solid var(--bone); padding:6px; margin-top:6px; font-family:'Space Mono',monospace; font-size:10px;">You get 42,069 sats.</div>
-    </div>
+  <div style="margin-top: 18px; display:flex; gap: 28px; align-items:flex-end;">
+    <div><div class="big-number" style="color: var(--orange); font-size:38px;">1.4B</div><div class="label-tiny">people across Africa</div></div>
+    <div><div class="big-number" style="color: var(--orange); font-size:38px;">2,000+</div><div class="label-tiny">spoken languages</div></div>
+    <div><div class="big-number" style="color: var(--orange); font-size:38px;">8%+</div><div class="label-tiny">avg remittance fee — highest on Earth</div></div>
+    <div><div class="big-number" style="color: var(--orange); font-size:38px;">0</div><div class="label-tiny">unified BTC apps in native languages</div></div>
   </div>
-  <div class="num">06 / 11</div>
+  <div class="num">02 / 08</div>
 </section>
 
-<!-- 7. HOW IT WORKS -->
+<!-- 3. OUR SOLUTION -->
 <section class="slide">
-  <div class="stamp">how it works</div>
-  <span class="eyebrow">Architecture</span>
-  <h2 style="margin-top: 18px;">Sovereign by default. Friendly by design.</h2>
-  <div class="grid-4" style="margin-top: 22px;">
-    <div class="panel stack">
-      <h3 style="color: var(--orange);">Nostr · NDK</h3>
-      <p style="font-size:13px;">Identity, follows, relays. We never see your nsec.</p>
-    </div>
-    <div class="panel stack">
-      <h3 style="color: var(--orange);">Breez SDK</h3>
-      <p style="font-size:13px;">Lightning + Liquid in the browser via WASM. Seedless wallets.</p>
-    </div>
-    <div class="panel stack">
-      <h3 style="color: var(--orange);">MavaPay</h3>
-      <p style="font-size:13px;">Lightning ↔ NGN bank rail. Cash out (staging live) → onramp next.</p>
-    </div>
-    <div class="panel stack">
-      <h3 style="color: var(--orange);">Claude Agent</h3>
-      <p style="font-size:13px;">Reads, drafts, explains. Multilingual. Confirms payments.</p>
-    </div>
-  </div>
+  <div class="stamp">our solution</div>
+  <span class="eyebrow">Our solution</span>
+  <h2 style="margin-top: 16px;"><span style="color: var(--orange);">zappr</span> — one surface, every language.</h2>
+  <p style="margin-top: 10px; max-width: 8in; font-size: 14px;">
+    A self-custodial Bitcoin social + payments hub that puts your Nostr feed, a Lightning
+    wallet, and a Bitcoin-native AI guide on <strong>one screen</strong> — and lets the guide speak
+    whatever language you walked in with.
+  </p>
 
-  <div class="panel-dark" style="margin-top: 16px; padding: 14px 18px;">
-    <h3>One passkey. Two keys. Zero custody.</h3>
-    <pre style="margin-top: 10px; color: var(--bone); font-family: 'Space Mono', monospace; font-size: 11px; line-height: 1.5; white-space: pre-wrap;">PRF(passkey, "NYOASTRTSAOYN") → BIP32 m/44'/1237'/55'/0/0 → Nostr nsec
-PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</pre>
-    <p style="margin-top: 10px; color: var(--bone); font-size: 13px;">
-      Same fingerprint, both keys reproduced on every unlock. Nothing stored
-      except the credential id. Logout clears it. Backup phrase exportable for
-      power users who want to graduate.
-    </p>
+  <div style="margin-top: 16px; display:grid; grid-template-columns: 1.15fr 1fr; gap: 18px;">
+    <div class="stack" style="gap:0;">
+      <div class="feat" style="margin-bottom:10px;"><div class="n">1</div><div class="t"><strong>One screen.</strong> Read your feed, zap posts, send payments, ask for help — no app-switching.</div></div>
+      <div class="feat" style="margin-bottom:10px;"><div class="n">2</div><div class="t"><strong>Talk to it.</strong> An AI agent that works in 18+ African languages — English, Pidgin, Yoruba, Hausa, Swahili…</div></div>
+      <div class="feat" style="margin-bottom:10px;"><div class="n">3</div><div class="t"><strong>Seedless onboarding.</strong> Tap a fingerprint → a wallet + Nostr identity. No seed phrase to copy.</div></div>
+      <div class="feat" style="margin-bottom:10px;"><div class="n">4</div><div class="t"><strong>Self-custodial.</strong> Your keys never leave the browser. Friendly <em>and</em> sovereign.</div></div>
+      <div class="feat"><div class="n">5</div><div class="t"><strong>Cash in &amp; out.</strong> Sats ↔ NGN bank, requested in plain language, right in the chat.</div></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr; gap: 10px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; height: 2.2in; border: 2px solid var(--ink); box-shadow: 5px 5px 0 0 var(--ink); padding: 10px; background: #fff;">
+        <div style="background: var(--bone); border: 2px solid var(--ink); padding: 8px;">
+          <div class="label-tiny">Wallet</div>
+          <div style="font-family: 'Space Mono', monospace; font-size: 18px; font-weight:700; margin-top: 6px;">42,069<br/><span style="font-size:10px;">sats</span></div>
+          <div class="chip" style="margin-top: 8px; font-size: 8px;">⚡ SELF-CUSTODIAL</div>
+        </div>
+        <div style="background: var(--bone); border: 2px solid var(--ink); padding: 8px;">
+          <div class="label-tiny">Feed</div>
+          <div style="background:#fff; border:2px solid var(--ink); padding:5px; margin-top:6px; font-size:9px;">@jack: ⚡ relays humming</div>
+          <div style="background:var(--volt); border:2px solid var(--ink); padding:5px; margin-top:6px; font-size:9px;">@you: testing zappr from lagos</div>
+        </div>
+        <div style="background: var(--ink); color: var(--bone); border: 2px solid var(--ink); padding: 8px;">
+          <div class="label-tiny" style="color: var(--volt);">Agent · Pidgin</div>
+          <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--bone); padding:5px; margin-top:6px; font-family:'Space Mono',monospace; font-size:9px;">abeg check my balance</div>
+          <div style="background: #fff; color: var(--ink); border: 2px solid var(--bone); padding:5px; margin-top:6px; font-family:'Space Mono',monospace; font-size:9px;">You get 42,069 sats.</div>
+        </div>
+      </div>
+      <div class="panel-dark" style="padding: 10px 12px;">
+        <div class="label-tiny" style="color: var(--volt);">How one fingerprint becomes two keys</div>
+        <pre style="margin:6px 0 0; color: var(--bone); font-family:'Space Mono',monospace; font-size: 9px; line-height: 1.5; white-space: pre-wrap;">PRF(passkey,"NYOASTRTSAOYN") → BIP32 → Nostr nsec
+PRF(passkey,"zappr-liquid-v1") → BIP39 → Lightning wallet</pre>
+      </div>
+    </div>
   </div>
-  <div class="num">07 / 11</div>
+  <div class="num">03 / 08</div>
 </section>
 
-<!-- 8. DEMO MOMENTS -->
+<!-- 4. DEMO -->
 <section class="slide">
-  <div class="stamp">demo moments</div>
-  <span class="eyebrow">Live on stage</span>
-  <h2 style="margin-top: 18px;">One tap. Many languages. Real money.</h2>
-  <div class="stack" style="margin-top: 18px;">
+  <div class="stamp">demo</div>
+  <span class="eyebrow">Demo</span>
+  <h2 style="margin-top: 16px;">One tap. Many languages. Real money.</h2>
+  <p style="margin-top: 8px; max-width: 8in; font-size: 14px;">Live on stage — every line below is a real interaction with the running app.</p>
+  <div class="stack" style="margin-top: 16px;">
     <div class="grid-2">
       <div class="bubble user" style="background: var(--orange);"><div class="who">user · onboarding</div>👆 (taps fingerprint)</div>
       <div class="bubble agent"><div class="who">zappr</div>Wallet ready. Welcome to Bitcoin. ⚡</div>
@@ -407,123 +318,122 @@ PRF(passkey, "zappr-liquid-v1") → BIP39 mnemonic → Breez Lightning wallet</p
   <div style="margin-top: 12px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink); opacity: 0.55; text-align: right;">
     NGN cashout via MavaPay (staging) — production keys next 30 days
   </div>
-  <div class="num">08 / 11</div>
+  <div class="num">04 / 08</div>
 </section>
 
-<!-- 9. WHY NOW -->
+<!-- 5. HOW IT WORKS -->
 <section class="slide">
-  <div class="stamp">why now</div>
-  <span class="eyebrow">Timing</span>
-  <h2 style="margin-top: 18px;">Every piece finally exists. We're stitching them.</h2>
-  <div class="grid-3" style="margin-top: 22px;">
-    <div class="panel stack">
-      <h3>Breez Passkey Login</h3>
-      <p style="font-size:13px;">Shipped March 2026. Self-custodial Lightning from a fingerprint, no seed phrase. We&apos;re among the first web apps integrating it.</p>
-    </div>
-    <div class="panel stack">
-      <h3>WebAuthn PRF universal</h3>
-      <p style="font-size:13px;">Chrome 147, Firefox 148, Safari 18 — PRF works on every modern browser as of mid-2026. The fallback path is gone.</p>
-    </div>
-    <div class="panel stack">
-      <h3>NWC matured</h3>
-      <p style="font-size:13px;">Any wallet plugs into any app with one string. Power users are already comfortable.</p>
-    </div>
-    <div class="panel stack">
-      <h3>Nostr crossed 1M</h3>
-      <p style="font-size:13px;">The decentralized social layer has critical mass. Creators are already there.</p>
-    </div>
-    <div class="panel stack">
-      <h3>AI broke the language wall</h3>
-      <p style="font-size:13px;">Claude speaks every African language we tested — fluently, not phrasebook-style.</p>
-    </div>
-    <div class="panel stack">
-      <h3>Remittance still 8%</h3>
-      <p style="font-size:13px;">Africa pays the highest remittance fees on Earth. Lightning makes it 0.1%.</p>
-    </div>
+  <div class="stamp">how it works</div>
+  <span class="eyebrow">The tech + the plan</span>
+  <h2 style="margin-top: 14px;">Sovereign tech. A real path to scale.</h2>
+
+  <div class="label-tiny" style="margin-top: 16px;">The technology</div>
+  <div class="grid-4" style="margin-top: 8px;">
+    <div class="panel" style="padding: 12px;"><h3 style="color: var(--orange); font-size:14px;">Nostr · NDK</h3><p style="font-size:11px; margin-top:6px;">Identity, follows, relays. We never see your nsec.</p></div>
+    <div class="panel" style="padding: 12px;"><h3 style="color: var(--orange); font-size:14px;">Breez SDK</h3><p style="font-size:11px; margin-top:6px;">Lightning + Liquid in-browser via WASM. Seedless wallets from a passkey.</p></div>
+    <div class="panel" style="padding: 12px;"><h3 style="color: var(--orange); font-size:14px;">MavaPay</h3><p style="font-size:11px; margin-top:6px;">Lightning ↔ NGN bank rail. Cash out live on staging.</p></div>
+    <div class="panel" style="padding: 12px;"><h3 style="color: var(--orange); font-size:14px;">Claude Agent</h3><p style="font-size:11px; margin-top:6px;">Reads, drafts, explains, confirms payments — multilingual. Only AI calls hit our server.</p></div>
   </div>
-  <div class="num">09 / 11</div>
+
+  <div class="label-tiny" style="margin-top: 18px;">The business plan</div>
+  <div class="grid-4" style="margin-top: 8px;">
+    <div class="panel-dark" style="padding: 12px;"><h3 style="font-size:14px;">Go-to-market</h3><p style="font-size:11px; margin-top:6px; color:var(--bone);">Beachhead: Lagos creators &amp; merchants already on Nostr. The product is its own distribution — every zap is a referral. We win on language; Bitnob &amp; Yellow Card ship English-first.</p></div>
+    <div class="panel-dark" style="padding: 12px;"><h3 style="font-size:14px;">Monetization</h3><p style="font-size:11px; margin-top:6px; color:var(--bone);">Free &amp; self-custodial. A transparent <strong style="color:var(--volt);">~1% ramp spread</strong> — Machankura's rate, far under the 8% remittance norm — plus merchant tools &amp; named Lightning addresses. We earn when you transact, never by holding funds.</p></div>
+    <div class="panel-dark" style="padding: 12px;"><h3 style="font-size:14px;">Scale</h3><p style="font-size:11px; margin-top:6px; color:var(--bone);">Client-side = near-zero cost per user; only AI &amp; ramp liquidity vary. New language = a prompt. The same rails reach a <strong style="color:var(--volt);">$23B/yr</strong> Nigeria remittance corridor, then KES/GHS/ZAR.</p></div>
+    <div class="panel-dark" style="padding: 12px;"><h3 style="font-size:14px;">Obstacles</h3><p style="font-size:11px; margin-top:6px; color:var(--bone);">Browser gaps → nsec/NIP-07/NWC fallbacks shipped. Fiat &amp; CBN rules → licensed partner (MavaPay), region by region. Ramp liquidity → partner float. Trust → we never custody funds.</p></div>
+  </div>
+  <div style="margin-top: 12px; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--ink); opacity: 0.5; line-height: 1.5;">
+    Sources: Machankura 1% ramp fee (TechCabal, 2026) · Nigeria spreads 0.5–3% (Breet, 2026) · Nigeria remittances ~$23B in 2025 (Nairametrics / CBN). Target model — offramp currently on staging.
+  </div>
+  <div class="num">05 / 08</div>
 </section>
 
-<!-- 10. WHAT'S COMING -->
+<!-- 6. FUTURE APPLICATIONS -->
 <section class="slide">
-  <div class="stamp">what's coming</div>
-  <span class="eyebrow">Roadmap</span>
-  <h2 style="margin-top: 14px;">Shipped. Next. Vision.</h2>
-  <p style="margin-top: 6px; font-size: 13px; max-width: 7in;">
-    What's already in the demo, what comes right after, and where we're pointing.
+  <div class="stamp">future applications</div>
+  <span class="eyebrow">Future applications</span>
+  <h2 style="margin-top: 14px;">Beyond the MVP.</h2>
+  <p style="margin-top: 6px; font-size: 13px; max-width: 8in;">
+    What ships right after the hackathon, what comes next, and where we're pointing long-term.
   </p>
 
-  <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; height: 5in;">
-    <!-- SHIPPED -->
-    <div style="background: #fff; border: 2px solid var(--ink); box-shadow: 4px 4px 0 0 var(--ink); padding: 14px; display: flex; flex-direction: column;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-        <span class="chip" style="background: var(--volt); font-size: 9px;">✓ SHIPPED</span>
-      </div>
-      <ul style="margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55;">
-        <li>Seedless passkey wallet (Breez + PRF)</li>
-        <li>Self-custodial nsec from same passkey</li>
-        <li>Receive · Send · BOLT11 + QR</li>
-        <li>Follow flow with kind:3 + local cache</li>
-        <li>AI agent in 18+ African languages</li>
-        <li>Zap · post via tool-use loop</li>
-        <li>BIP-39 mnemonic export</li>
-        <li>NIP-07 + nsec + NWC for power users</li>
-        <li><strong style="color: var(--orange);">Sats → NGN bank cashout via agent</strong> <span style="opacity: 0.6;">(MavaPay staging)</span></li>
+  <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; height: 4.6in;">
+    <div class="panel" style="display: flex; flex-direction: column; padding: 14px;">
+      <span class="chip" style="background: var(--orange); font-size: 9px; align-self:flex-start;">⚡ NEXT 30 DAYS</span>
+      <ul style="margin: 12px 0 0; padding-left: 16px; font-size: 12px; line-height: 1.55;">
+        <li><strong>MavaPay production keys</strong> — staging → live NGN payouts</li>
+        <li><strong>NGN → sats onramp</strong> — fund from a bank transfer, in your language, in chat</li>
+        <li><strong>@you.zappr.app</strong> — pick a Lightning username, we host the LNURL endpoint</li>
+        <li>Profile editing (avatar, lud16, bio)</li>
+        <li>Native zap UX — slider, presets, custom amounts</li>
       </ul>
     </div>
 
-    <!-- NEXT 30 DAYS -->
     <div class="panel-dark" style="display: flex; flex-direction: column;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-        <span class="chip" style="background: var(--orange); font-size: 9px;">⚡ NEXT 30 DAYS</span>
-      </div>
-      <ul style="margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55; color: var(--bone);">
-        <li><strong style="color: var(--volt);">MavaPay production keys</strong> — flip the offramp from staging to live NGN payouts</li>
-        <li><strong style="color: var(--volt);">NGN → sats onramp</strong> — fund your wallet from a Nigerian bank transfer, in your language, in the chat</li>
-        <li><strong style="color: var(--volt);">@you.zappr.app</strong> — pick a Lightning username, we host the LNURL endpoint</li>
-        <li>Profile editing (avatar, lud16, bio) inside the app</li>
-        <li>Native zap UX in feed — slider, presets, custom amounts</li>
+      <span class="chip" style="background: var(--volt); font-size: 9px; align-self:flex-start;">→ NEXT 90 DAYS</span>
+      <ul style="margin: 12px 0 0; padding-left: 16px; font-size: 12px; line-height: 1.55; color: var(--bone);">
+        <li><strong style="color: var(--volt);">Voice mode</strong> — speak Pidgin / Yoruba / Swahili, agent replies aloud</li>
         <li>Merchant POS mode — QR receive, daily reports</li>
+        <li>Multi-device sync — same wallet on phone + laptop</li>
+        <li>Group wallets — split bills, shared zap pools</li>
+        <li>Offline relay cache — feed loads on the bus</li>
       </ul>
     </div>
 
-    <!-- NEXT 90 DAYS / VISION -->
     <div style="background: var(--volt); color: var(--ink); border: 2px solid var(--ink); box-shadow: 4px 4px 0 0 var(--ink); padding: 14px; display: flex; flex-direction: column;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-        <span class="chip" style="background: var(--ink); color: var(--volt); font-size: 9px;">→ NEXT 90 DAYS</span>
-      </div>
-      <ul style="margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55;">
-        <li>Voice mode — speak in Pidgin / Yoruba / Swahili, agent replies aloud</li>
-        <li>Multi-device sync — passkey on phone + laptop, same wallet</li>
-        <li>Group wallets — split bills, shared zap pools for creators</li>
-        <li>Offline relay cache — feed loads on the bus</li>
-        <li>Cross-border ramps — KES, GHS, ZAR via the same MavaPay rails</li>
+      <span class="chip" style="background: var(--ink); color: var(--volt); font-size: 9px; align-self:flex-start;">◆ LONG-TERM VISION</span>
+      <ul style="margin: 12px 0 0; padding-left: 16px; font-size: 12px; line-height: 1.55;">
+        <li>Cross-border ramps — KES, GHS, ZAR on the same rails</li>
+        <li>An open agent that any African Bitcoin app can embed</li>
+        <li>Local-language Bitcoin literacy, built into the chat</li>
       </ul>
       <div style="margin-top: auto; padding-top: 12px; border-top: 2px solid var(--ink); font-family: 'Space Mono', monospace; font-size: 11px;">
-        Vision: the default Bitcoin app for the next billion — built in Lagos.
+        The default Bitcoin app for the next billion — built in Lagos.
       </div>
     </div>
   </div>
-
-  <div class="num">10 / 11</div>
+  <div class="num">06 / 08</div>
 </section>
 
-<!-- 11. ASK -->
+<!-- 7. WHY IT MATTERS -->
+<section class="slide">
+  <div class="stamp">why it matters</div>
+  <span class="eyebrow">Why it matters</span>
+  <h2 style="margin-top: 16px;">When the experience disappears,<br/><span style="color: var(--orange);">Bitcoin becomes infrastructure.</span></h2>
+  <p style="margin-top: 16px; max-width: 8in; font-size: 16px; line-height: 1.5;">
+    The technology to give 1.4 billion people sovereign money already exists. The only thing
+    standing between them and it is the experience. zappr removes that wall — in their language,
+    on the phone they already own, without ever taking their keys.
+  </p>
+
+  <div class="grid-3" style="margin-top: 26px;">
+    <div class="panel stack"><h3>Sovereignty</h3><p style="margin-top:8px; font-size:13px;">Self-custody that a first-timer can actually use. No seed phrase to lose, no custodian to trust.</p></div>
+    <div class="panel stack"><h3>Inclusion</h3><p style="margin-top:8px; font-size:13px;">Your language, your phone. The 95% that jargon filtered out are finally invited in.</p></div>
+    <div class="panel stack"><h3>Real economy</h3><p style="margin-top:8px; font-size:13px;">Creators get tipped. Merchants cash out to NGN. Money moves at 0.1%, not 8%.</p></div>
+  </div>
+
+  <div style="margin-top: 26px;" class="quote">
+    The merchant from slide two? <span style="color: var(--orange);">She onboards in one tap — and never has to ask "is this the future?" again.</span>
+  </div>
+  <div class="num">07 / 08</div>
+</section>
+
+<!-- 8. QUESTIONS / THANK THE JUDGES -->
 <section class="slide cover">
-  <div class="stamp">the ask</div>
+  <div class="stamp">thank you</div>
   <div>
-    <span class="pill-orange">Hack4Freedom Lagos 2026</span>
-    <h1 style="margin-top: 22px; font-size: 84px;">Win this.<br/>Ship the rest.</h1>
-    <p class="tagline" style="margin-top: 18px; font-size: 18px;">
-      We're not pitching a prototype.<br/>
-      We're pitching a beachhead.
-    </p>
+    <span class="pill-orange">Hack4Freedom Lagos 2026 · Powered by Evento</span>
+    <h1 style="margin-top: 22px; font-size: 80px;">Thank you.<br/>Questions?</h1>
+    <p class="tagline" style="margin-top: 18px; font-size: 18px;">⚡ talk to bitcoin · zappr.app</p>
   </div>
   <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-    <div class="tagline" style="font-family:'Space Mono',monospace; font-size: 16px; color: var(--volt);">
-      zappr.app · ⚡ talk to bitcoin
+    <div style="font-family:'Space Mono',monospace; font-size: 12px; line-height: 1.7; color: var(--bone);">
+      Abdullahi Ummu Salmat <span style="opacity:0.55;">— PM &amp; Backend</span><br/>
+      Ibrahim Ashiah Adejoke <span style="opacity:0.55;">— Product Design</span><br/>
+      Adegboye Oluwadarasimi Busayomi <span style="opacity:0.55;">— Frontend</span><br/>
+      <span style="opacity:0.55;">github.com/Salmatcre8/zappr</span>
     </div>
-    <div class="num" style="position:static;">11 / 11</div>
+    <div class="num" style="position:static;">08 / 08</div>
   </div>
 </section>
 
