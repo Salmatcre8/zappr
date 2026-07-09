@@ -29,7 +29,7 @@ export default function Sidebar() {
     <div className="space-y-4">
       <div className="brut-panel p-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-volt flex items-center justify-center border-2 border-black shrink-0">
+          <div className="w-12 h-12 bg-orange flex items-center justify-center border border-line rounded-xl shrink-0">
             <User className="w-6 h-6 text-ink" strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
@@ -40,7 +40,7 @@ export default function Sidebar() {
             <button
               onClick={copyNpub}
               aria-label="Copy npub"
-              className="border-2 border-black bg-panel p-1.5 hover:bg-orange hover:text-ink transition shrink-0"
+              className="border border-line rounded-xl bg-panel p-1.5 hover:bg-orange hover:text-ink transition shrink-0"
             >
               {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             </button>

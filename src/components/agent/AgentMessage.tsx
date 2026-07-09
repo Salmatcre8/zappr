@@ -28,8 +28,8 @@ export default function AgentMessage({ message }: { message: Msg }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[85%] border-2 border-black p-2.5 font-sans text-[13px] whitespace-pre-wrap break-words ${
-          isUser ? 'bg-volt text-ink shadow-brut-sm' : 'bg-surface text-bone shadow-brut-sm'
+        className={`max-w-[85%] border border-line rounded-xl p-2.5 font-sans text-[13px] whitespace-pre-wrap break-words ${
+          isUser ? 'bg-orange text-ink shadow-brut-sm' : 'bg-surface text-bone shadow-brut-sm'
         }`}
       >
         {text}

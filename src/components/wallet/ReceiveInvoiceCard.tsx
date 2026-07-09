@@ -76,7 +76,7 @@ export default function ReceiveInvoiceCard() {
     <div className="brut-panel p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-bone/60">
-          <ArrowDownLeft className="w-3.5 h-3.5 text-volt" /> Receive
+          <ArrowDownLeft className="w-3.5 h-3.5 text-orange" /> Receive
         </div>
         <button
           onClick={() => {
@@ -132,7 +132,7 @@ export default function ReceiveInvoiceCard() {
 
           <button
             onClick={askAgent}
-            className="w-full flex items-center justify-center gap-1.5 font-mono text-[10px] text-bone/50 hover:text-volt transition"
+            className="w-full flex items-center justify-center gap-1.5 font-mono text-[10px] text-bone/50 hover:text-orange transition"
           >
             <HelpCircle className="w-3 h-3" />
             What&apos;s a BOLT11 invoice?
@@ -140,7 +140,7 @@ export default function ReceiveInvoiceCard() {
         </>
       ) : (
         <>
-          <div className="bg-white border-2 border-black p-3 flex items-center justify-center">
+          <div className="bg-white border border-line rounded-xl p-3 flex items-center justify-center">
             <QRCodeSVG
               value={invoice}
               size={180}
@@ -151,7 +151,7 @@ export default function ReceiveInvoiceCard() {
             />
           </div>
 
-          <div className="bg-ink text-volt border-2 border-black p-2 font-mono text-[9px] leading-relaxed break-all max-h-20 overflow-y-auto">
+          <div className="bg-ink text-orange border border-line rounded-xl p-2 font-mono text-[9px] leading-relaxed break-all max-h-20 overflow-y-auto">
             {invoice}
           </div>
 

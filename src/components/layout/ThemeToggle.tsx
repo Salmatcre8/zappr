@@ -25,7 +25,7 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
     <button
       onClick={toggle}
       aria-label="Toggle theme"
-      className={`border-2 border-black bg-panel p-1.5 hover:bg-orange hover:text-ink transition ${className}`}
+      className={`border border-line rounded-xl bg-panel p-1.5 hover:bg-orange hover:text-ink transition ${className}`}
     >
       {mounted && light ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
     </button>

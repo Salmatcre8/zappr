@@ -37,14 +37,14 @@ export default function TopBar() {
   return (
     <header className="brut-panel mx-3 md:mx-4 mt-3 md:mt-4 px-3 md:px-4 py-2.5 md:py-3 flex items-center justify-between shrink-0">
       <div className="flex items-center gap-2 md:gap-3 min-w-0">
-        <div className="w-8 h-8 bg-orange flex items-center justify-center border-2 border-black shrink-0">
+        <div className="w-8 h-8 bg-orange flex items-center justify-center border border-line rounded-xl shrink-0">
           <Zap className="w-4 h-4 text-ink" strokeWidth={3} />
         </div>
         <span className="font-mono text-lg md:text-xl font-bold">zappr</span>
       </div>
       <div className="flex items-center gap-2 md:gap-3 font-mono text-xs">
         <div className="hidden sm:flex items-center gap-1.5">
-          <Radio className={`w-3.5 h-3.5 ${adapter ? 'text-volt' : 'text-bone/30'}`} />
+          <Radio className={`w-3.5 h-3.5 ${adapter ? 'text-orange' : 'text-bone/30'}`} />
           <span className="text-bone/60">
             {adapter ? (adapter.kind === 'breez' ? 'WALLET LIVE' : 'NWC LIVE') : 'WALLET OFF'}
           </span>
@@ -54,7 +54,7 @@ export default function TopBar() {
         <button
           onClick={logout}
           aria-label="Log out"
-          className="border-2 border-black bg-panel p-1.5 hover:bg-orange hover:text-ink transition"
+          className="border border-line rounded-xl bg-panel p-1.5 hover:bg-orange hover:text-ink transition"
         >
           <LogOut className="w-3.5 h-3.5" />
         </button>

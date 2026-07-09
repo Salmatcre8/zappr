@@ -8,7 +8,7 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className="flex items-center justify-between p-4 md:p-6">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-orange flex items-center justify-center border-2 border-black shadow-brut-sm">
+          <div className="w-9 h-9 bg-orange flex items-center justify-center border border-line rounded-xl shadow-brut-sm">
             <Zap className="w-5 h-5 text-ink" strokeWidth={3} />
           </div>
           <span className="font-mono text-xl md:text-2xl font-bold">zappr</span>
@@ -30,17 +30,17 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto w-full">
           <div className="grid md:grid-cols-5 gap-8 md:gap-12 items-center">
             <div className="md:col-span-3 space-y-6">
-              <div className="inline-flex items-center gap-2 border-2 border-black bg-volt text-ink px-3 py-1 font-mono text-[10px] md:text-xs uppercase tracking-widest shadow-brut-sm">
+              <div className="inline-flex items-center gap-2 border border-line rounded-xl bg-orange text-ink px-3 py-1 font-mono text-[10px] md:text-xs uppercase tracking-widest shadow-brut-sm">
                 <span className="w-1.5 h-1.5 bg-surface rounded-full animate-pulse" />
                 Self-custodial · multilingual
               </div>
               <h1 className="font-mono text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
-                Your <span className="bg-orange text-ink px-2 inline-block -rotate-1 border-2 border-black shadow-brut-sm">Bitcoin</span>
+                Your <span className="bg-orange text-ink px-2 inline-block -rotate-1 border border-line rounded-xl shadow-brut-sm">Bitcoin</span>
                 <br />
                 social hub,
                 <br />
                 with an{' '}
-                <span className="bg-volt text-ink px-2 inline-block rotate-1 border-2 border-black shadow-brut-sm">
+                <span className="bg-orange text-ink px-2 inline-block rotate-1 border border-line rounded-xl shadow-brut-sm">
                   AI brain
                 </span>
                 .
@@ -72,22 +72,22 @@ export default function LandingPage() {
             {/* Terminal mock */}
             <div className="md:col-span-2">
               <div className="brut-panel p-4 font-mono text-[11px] md:text-xs space-y-2">
-                <div className="flex items-center gap-1.5 pb-2 border-b-2 border-black">
-                  <div className="w-2.5 h-2.5 border-2 border-black bg-orange" />
-                  <div className="w-2.5 h-2.5 border-2 border-black bg-volt" />
-                  <div className="w-2.5 h-2.5 border-2 border-black bg-panel" />
+                <div className="flex items-center gap-1.5 pb-2 border-b border-line">
+                  <div className="w-2.5 h-2.5 rounded-full bg-orange" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-orange" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-line" />
                   <span className="ml-2 text-bone/50 uppercase tracking-widest text-[9px]">
                     zappr-agent
                   </span>
                 </div>
                 <div className="text-bone/80">&gt; check my balance</div>
-                <div className="text-volt">⚡ reading wallet…</div>
+                <div className="text-orange">⚡ reading wallet…</div>
                 <div className="text-bone">
                   You have <span className="text-orange font-bold">42,069</span> sats available.
                 </div>
                 <div className="text-bone/80 pt-2">&gt; zap satoshi 210 sats</div>
-                <div className="text-volt">⚡ preparing payment…</div>
-                <div className="border-2 border-orange bg-orange/10 p-2 text-[10px]">
+                <div className="text-orange">⚡ preparing payment…</div>
+                <div className="border border-orange rounded-lg bg-orange/10 p-2 text-[10px]">
                   <div className="text-orange font-bold uppercase tracking-widest">
                     confirm zap
                   </div>
@@ -95,10 +95,10 @@ export default function LandingPage() {
                   <div className="text-bone/80">amount: 210 sats</div>
                 </div>
                 <div className="flex gap-1.5">
-                  <div className="flex-1 text-center border-2 border-black bg-orange text-ink py-1 text-[10px] font-bold">
+                  <div className="flex-1 text-center rounded-lg bg-orange text-ink py-1 text-[10px] font-bold">
                     APPROVE
                   </div>
-                  <div className="flex-1 text-center border-2 border-black bg-panel py-1 text-[10px] font-bold">
+                  <div className="flex-1 text-center border border-line rounded-lg bg-panel py-1 text-[10px] font-bold">
                     CANCEL
                   </div>
                 </div>
@@ -109,7 +109,7 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section className="px-4 md:px-10 py-10 md:py-16 border-t-2 border-black">
+      <section className="px-4 md:px-10 py-10 md:py-16 border-t border-line">
         <div className="max-w-6xl mx-auto">
           <div className="font-mono text-[10px] md:text-xs uppercase tracking-widest text-bone/50 mb-2">
             // core features
@@ -123,7 +123,7 @@ export default function LandingPage() {
                 icon: Radio,
                 title: 'Unified Feed',
                 body: 'Aggregates kind:1 notes across Damus, Nostr.band, nos.lol, Primal and Yakihonne. Zap any note with one tap.',
-                color: 'bg-volt',
+                color: 'bg-orange',
               },
               {
                 icon: Wallet,
@@ -135,13 +135,13 @@ export default function LandingPage() {
                 icon: Bot,
                 title: 'Claude Agent',
                 body: "Natural language over your feed and wallet. It reads, summarizes, and pays — with your approval on every send.",
-                color: 'bg-black',
-                iconColor: 'text-volt',
+                color: 'bg-bone',
+                iconColor: 'text-bg',
               },
             ].map((f) => (
               <div key={f.title} className="brut-panel p-5 space-y-3">
                 <div
-                  className={`w-12 h-12 ${f.color} border-2 border-black flex items-center justify-center shadow-brut-sm`}
+                  className={`w-12 h-12 ${f.color} border border-line rounded-xl flex items-center justify-center shadow-brut-sm`}
                 >
                   <f.icon className={`w-6 h-6 ${'iconColor' in f ? (f as { iconColor: string }).iconColor : 'text-ink'}`} strokeWidth={2.5} />
                 </div>
@@ -168,7 +168,7 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="px-4 md:px-10 py-6 border-t-2 border-black">
+      <footer className="px-4 md:px-10 py-6 border-t border-line">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 font-mono text-[11px] text-bone/50">
           <div>© 2026 zappr · Built for women in Bitcoin, Lagos</div>
           <div className="flex items-center gap-4">

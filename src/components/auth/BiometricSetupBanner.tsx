@@ -41,7 +41,7 @@ export default function BiometricSetupBanner() {
 
   return (
     <div className="mx-3 md:mx-4 mt-3 brut-panel p-3 flex items-center gap-3">
-      <div className="w-8 h-8 bg-volt flex items-center justify-center border-2 border-black shrink-0">
+      <div className="w-8 h-8 bg-orange flex items-center justify-center border border-line rounded-xl shrink-0">
         <Fingerprint className="w-4 h-4 text-ink" strokeWidth={3} />
       </div>
       <div className="flex-1 min-w-0">
@@ -63,7 +63,7 @@ export default function BiometricSetupBanner() {
       <button
         onClick={() => setVisible(false)}
         aria-label="Dismiss"
-        className="border-2 border-black bg-panel p-1.5 hover:bg-orange hover:text-ink transition"
+        className="border border-line rounded-xl bg-panel p-1.5 hover:bg-orange hover:text-ink transition"
       >
         <X className="w-3.5 h-3.5" />
       </button>

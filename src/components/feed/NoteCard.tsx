@@ -12,7 +12,7 @@ function renderContent(text: string) {
     if (/^#\w+/.test(p)) return <span key={i} className="text-orange">{p}</span>;
     if (/^https?:\/\//.test(p))
       return (
-        <a key={i} href={p} target="_blank" rel="noreferrer" className="underline text-volt break-all">
+        <a key={i} href={p} target="_blank" rel="noreferrer" className="underline text-orange break-all">
           {p}
         </a>
       );
@@ -29,13 +29,13 @@ export default function NoteCard({ note }: { note: FeedNote }) {
     : '';
 
   return (
-    <article className="bg-surface border-2 border-black p-3 shadow-brut-sm">
+    <article className="bg-surface border border-line rounded-xl p-3 shadow-brut-sm">
       <header className="flex items-center gap-2 mb-2">
         {profile?.picture ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.picture} alt="" className="w-8 h-8 border-2 border-black object-cover" />
+          <img src={profile.picture} alt="" className="w-8 h-8 border border-line rounded-xl object-cover" />
         ) : (
-          <div className="w-8 h-8 bg-orange border-2 border-black" />
+          <div className="w-8 h-8 bg-orange border border-line rounded-xl" />
         )}
         <div className="min-w-0 flex-1">
           <div className="font-mono text-xs font-bold truncate">{name}</div>

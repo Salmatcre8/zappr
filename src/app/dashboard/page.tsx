@@ -190,14 +190,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-panel border-t-2 border-black flex z-30">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-panel border-t-2 border-line flex z-30">
         {tabs.map((t) => {
           const active = tab === t.key;
           return (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 border-r-2 border-black last:border-r-0 font-mono text-[10px] uppercase tracking-widest transition ${
+              className={`flex-1 flex flex-col items-center gap-1 py-3 border-r-2 border-line last:border-r-0 font-mono text-[10px] uppercase tracking-widest transition ${
                 active ? 'bg-orange text-ink' : 'hover:bg-surface'
               }`}
             >

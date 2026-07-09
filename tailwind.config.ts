@@ -17,7 +17,11 @@ const config: Config = {
         // bg = the app page background (flips)
         bg: 'rgb(var(--bg) / <alpha-value>)',
         line: 'rgb(var(--line) / <alpha-value>)',
-        orange: { DEFAULT: '#F7931A', 500: '#F7931A', 600: '#D97C06' },
+        // secondary / caption text (flips with theme)
+        dim: 'rgb(var(--dim) / <alpha-value>)',
+        faint: 'rgb(var(--faint) / <alpha-value>)',
+        // orange = accent, theme-aware (#F7931A dark / #DD7B08 light)
+        orange: 'rgb(var(--orange) / <alpha-value>)',
         volt: '#FFE500',
       },
       fontFamily: {
@@ -25,13 +29,14 @@ const config: Config = {
         sans: ['Inter', 'ui-sans-serif', 'system-ui'],
       },
       boxShadow: {
-        brut: '4px 4px 0px 0px #000000',
-        'brut-sm': '2px 2px 0px 0px #000000',
-        'brut-orange': '4px 4px 0px 0px #F7931A',
-        'brut-volt': '4px 4px 0px 0px #FFE500',
+        // soft, elevation-based shadows (revamp) — replaces hard offset shadows
+        brut: '0 4px 14px rgba(20, 15, 5, 0.06)',
+        'brut-sm': '0 2px 8px rgba(20, 15, 5, 0.05)',
+        'brut-lg': '0 20px 50px rgba(20, 15, 5, 0.12)',
+        'brut-orange': '0 8px 22px rgb(var(--orange) / 0.28)',
       },
-      borderRadius: { none: '0', sm: '2px' },
-      transitionDuration: { DEFAULT: '120ms' },
+      borderRadius: { none: '0', sm: '7px', md: '10px', lg: '14px', xl: '18px' },
+      transitionDuration: { DEFAULT: '140ms' },
     },
   },
   plugins: [],

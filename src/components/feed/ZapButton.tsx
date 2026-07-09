@@ -44,7 +44,7 @@ export default function ZapButton({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1 border-2 border-black bg-panel px-2 py-1 font-mono text-[11px] hover:bg-volt hover:text-ink transition"
+        className="flex items-center gap-1 border border-line rounded-xl bg-panel px-2 py-1 font-mono text-[11px] hover:bg-orange hover:text-ink transition"
       >
         <Zap className="w-3 h-3" /> Zap
       </button>
@@ -58,17 +58,17 @@ export default function ZapButton({
         min={1}
         value={amount}
         onChange={(e) => setAmount(Number(e.target.value))}
-        className="w-20 bg-surface border-2 border-black px-2 py-1 font-mono text-[11px]"
+        className="w-20 bg-surface border border-line rounded-xl px-2 py-1 font-mono text-[11px]"
       />
       <button
         onClick={zap}
         disabled={paying || done}
-        className="flex items-center gap-1 border-2 border-black bg-orange text-ink px-2 py-1 font-mono text-[11px] disabled:opacity-60"
+        className="flex items-center gap-1 border border-line rounded-xl bg-orange text-ink px-2 py-1 font-mono text-[11px] disabled:opacity-60"
       >
         {paying ? <Loader2 className="w-3 h-3 animate-spin" /> : done ? <Check className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
         {done ? 'Zapped' : paying ? '...' : 'Send'}
       </button>
-      <button onClick={() => setOpen(false)} className="border-2 border-black bg-panel p-1">
+      <button onClick={() => setOpen(false)} className="border border-line rounded-xl bg-panel p-1">
         <X className="w-3 h-3" />
       </button>
       {error && <span className="text-[10px] text-orange font-mono">{error}</span>}

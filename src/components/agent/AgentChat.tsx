@@ -148,8 +148,8 @@ export default function AgentChat() {
 
   return (
     <>
-      <div className="flex items-center gap-2 px-4 py-3 border-b-2 border-black">
-        <div className="w-7 h-7 bg-orange flex items-center justify-center border-2 border-black">
+      <div className="flex items-center gap-2 px-4 py-3 border-b-2 border-line">
+        <div className="w-7 h-7 bg-orange flex items-center justify-center border border-line rounded-xl">
           <Bot className="w-4 h-4 text-ink" strokeWidth={2.5} />
         </div>
         <div className="font-mono text-xs uppercase tracking-widest text-bone/70">zappr Agent</div>
@@ -169,7 +169,7 @@ export default function AgentChat() {
                 <button
                   key={s}
                   onClick={() => handleSend(s)}
-                  className="border-2 border-black bg-surface px-2 py-1.5 font-mono text-[11px] hover:bg-volt hover:text-ink transition text-left"
+                  className="border border-line rounded-xl bg-surface px-2 py-1.5 font-mono text-[11px] hover:bg-orange hover:text-ink transition text-left"
                 >
                   {s}
                 </button>
@@ -183,7 +183,7 @@ export default function AgentChat() {
         ))}
 
         {pending && (
-          <div className="bg-surface border-2 border-orange p-3 shadow-brut-orange">
+          <div className="bg-surface border border-orange p-3 shadow-brut-orange">
             <div className="font-mono text-[10px] uppercase tracking-widest text-orange mb-2">
               Confirm {pending.tool.replace(/_/g, ' ')}
             </div>
@@ -208,13 +208,13 @@ export default function AgentChat() {
             <div className="flex gap-2">
               <button
                 onClick={() => handleConfirm(true)}
-                className="flex-1 border-2 border-black bg-orange text-ink font-mono text-xs py-1.5 font-bold hover:-translate-x-[1px] hover:-translate-y-[1px] transition"
+                className="flex-1 border border-line rounded-xl bg-orange text-ink font-mono text-xs py-1.5 font-bold hover:-translate-x-[1px] hover:-translate-y-[1px] transition"
               >
                 APPROVE
               </button>
               <button
                 onClick={() => handleConfirm(false)}
-                className="flex-1 border-2 border-black bg-panel font-mono text-xs py-1.5 font-bold hover:bg-volt hover:text-ink transition"
+                className="flex-1 border border-line rounded-xl bg-panel font-mono text-xs py-1.5 font-bold hover:bg-orange hover:text-ink transition"
               >
                 CANCEL
               </button>
@@ -223,7 +223,7 @@ export default function AgentChat() {
         )}
 
         {status && (
-          <div className="font-mono text-[11px] text-volt border-2 border-black bg-surface px-3 py-1.5 inline-block">
+          <div className="font-mono text-[11px] text-orange border border-line rounded-xl bg-surface px-3 py-1.5 inline-block">
             {status}
           </div>
         )}

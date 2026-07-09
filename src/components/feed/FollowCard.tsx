@@ -70,7 +70,7 @@ export default function FollowCard({ onChanged }: { onChanged?: () => void }) {
   return (
     <div className="brut-panel p-3 space-y-2">
       <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-bone/60">
-        <UserPlus className="w-3.5 h-3.5 text-volt" /> Follow someone
+        <UserPlus className="w-3.5 h-3.5 text-orange" /> Follow someone
       </div>
       <div className="flex gap-2">
         <input
@@ -96,7 +96,7 @@ export default function FollowCard({ onChanged }: { onChanged?: () => void }) {
         </div>
       )}
       {okMsg && (
-        <div className="font-mono text-[10px] text-volt flex items-center gap-1">
+        <div className="font-mono text-[10px] text-orange flex items-center gap-1">
           <Check className="w-3 h-3" /> {okMsg}
         </div>
       )}
@@ -120,9 +120,9 @@ export default function FollowCard({ onChanged }: { onChanged?: () => void }) {
                 key={s.npub}
                 onClick={() => followOne(s.npub)}
                 disabled={busy || alreadyFollowing}
-                className={`border-2 border-black px-2 py-1 font-mono text-[10px] transition ${
+                className={`border border-line rounded-xl px-2 py-1 font-mono text-[10px] transition ${
                   alreadyFollowing
-                    ? 'bg-volt text-ink opacity-70'
+                    ? 'bg-orange text-ink opacity-70'
                     : 'bg-panel hover:bg-orange hover:text-ink'
                 }`}
               >

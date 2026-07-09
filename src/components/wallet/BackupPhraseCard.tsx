@@ -62,7 +62,7 @@ export default function BackupPhraseCard() {
   return (
     <div className="brut-panel p-4 space-y-3">
       <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-bone/60">
-        <ShieldAlert className="w-3.5 h-3.5 text-volt" /> Recovery phrase
+        <ShieldAlert className="w-3.5 h-3.5 text-orange" /> Recovery phrase
       </div>
 
       {!mnemonic ? (
@@ -84,7 +84,7 @@ export default function BackupPhraseCard() {
         </>
       ) : (
         <>
-          <div className="bg-ink text-volt border-2 border-black p-3 font-mono text-[11px] leading-relaxed break-words">
+          <div className="bg-ink text-orange border border-line rounded-xl p-3 font-mono text-[11px] leading-relaxed break-words">
             {mnemonic}
           </div>
           <div className="flex gap-2">

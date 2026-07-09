@@ -1,98 +1,118 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────────────────
+   zappr design tokens — calm / refined system (revamp)
+   Dark is the default; .light overrides. Both mirror the
+   reference design (warm bone light theme + near-black dark).
+   ───────────────────────────────────────────────────────────── */
+
 /* Dark theme (default) */
 :root {
   color-scheme: dark;
-  --bg: 10 10 10;         /* #0A0A0A — page background */
-  --panel: 20 20 20;      /* #141414 — raised panel */
-  --surface: 10 10 10;    /* #0A0A0A — recessed card inside panel */
-  --bone: 245 245 240;    /* #F5F5F0 — primary text */
-  --line: 42 42 42;       /* #2A2A2A — subtle dividers */
+  --bg: 12 12 14;          /* #0c0c0e — page background */
+  --panel: 21 21 23;       /* #151517 — raised panel */
+  --surface: 27 27 31;     /* #1b1b1f — recessed card inside panel */
+  --bone: 237 237 240;     /* #ededf0 — primary text */
+  --dim: 154 154 164;      /* #9a9aa4 — secondary text */
+  --faint: 102 102 111;    /* #66666f — labels / captions */
+  --line: 42 42 48;        /* #2a2a30 — soft dividers */
+  --orange: 247 147 26;    /* #F7931A — accent (reads brighter on dark) */
 }
 
 /* Light theme */
 .light {
   color-scheme: light;
-  --bg: 242 240 232;      /* warm bone paper */
-  --panel: 255 255 255;   /* pure white raised panel */
-  --surface: 242 240 232; /* recessed card — same tone as bg for contrast vs white panel */
-  --bone: 10 10 10;       /* near-black text */
-  --line: 212 212 212;    /* #D4D4D4 */
+  --bg: 241 239 231;       /* #F1EFE7 — warm bone paper */
+  --panel: 255 255 255;    /* #FFFFFF — pure white raised panel */
+  --surface: 246 243 235;  /* #F6F3EB — recessed card */
+  --bone: 27 26 23;        /* #1b1a17 — near-black warm text */
+  --dim: 109 107 98;       /* #6d6b62 — secondary text */
+  --faint: 162 159 147;    /* #a29f93 — labels / captions */
+  --line: 228 225 214;     /* #E4E1D6 — soft dividers */
+  --orange: 221 123 8;     /* #DD7B08 — muted accent for light bg */
 }
 
 html, body {
   background: rgb(var(--bg));
   color: rgb(var(--bone));
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-body {
-  background-image: radial-gradient(rgb(var(--bone) / 0.05) 1px, transparent 1px);
-  background-size: 4px 4px;
-}
-
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: rgb(var(--panel)); }
-::-webkit-scrollbar-thumb { background: #F7931A; border: 2px solid #000; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(var(--line)); border-radius: 9px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--faint)); }
 
 .font-mono { font-family: 'Space Mono', ui-monospace, monospace; }
 
+/* ── Surfaces ─────────────────────────────────────────────── */
 .brut {
-  border: 2px solid #000;
-  box-shadow: 4px 4px 0px 0px #000;
+  border: 1px solid rgb(var(--line));
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(20, 15, 5, 0.06);
 }
 
 .brut-panel {
   background: rgb(var(--panel));
-  border: 2px solid #000;
-  box-shadow: 4px 4px 0px 0px #000;
+  border: 1px solid rgb(var(--line));
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(20, 15, 5, 0.06);
 }
 
+/* ── Buttons ──────────────────────────────────────────────── */
 .brut-btn {
-  background: #F7931A;
-  color: #0A0A0A;
-  border: 2px solid #000;
-  box-shadow: 4px 4px 0px 0px #000;
-  font-family: 'Space Mono', monospace;
+  background: rgb(var(--orange));
+  color: #140c02;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  box-shadow: 0 8px 22px rgb(var(--orange) / 0.28);
   font-weight: 700;
-  padding: 10px 16px;
-  transition: transform 120ms, box-shadow 120ms;
+  padding: 11px 18px;
+  transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
 }
-.brut-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0px 0px #000; }
-.brut-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0px 0px #000; }
-.brut-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.brut-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgb(var(--orange) / 0.34); }
+.brut-btn:active { transform: translateY(0); box-shadow: 0 6px 16px rgb(var(--orange) / 0.26); }
+.brut-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 .brut-btn-ghost {
   background: rgb(var(--panel));
   color: rgb(var(--bone));
-  border: 2px solid #000;
-  box-shadow: 4px 4px 0px 0px #000;
-  font-family: 'Space Mono', monospace;
-  font-weight: 700;
-  padding: 10px 16px;
-  transition: transform 120ms, box-shadow 120ms;
+  border: 1px solid rgb(var(--line));
+  border-radius: 11px;
+  box-shadow: 0 2px 8px rgba(20, 15, 5, 0.05);
+  font-weight: 600;
+  padding: 11px 18px;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
-.brut-btn-ghost:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0px 0px #000; }
+.brut-btn-ghost:hover { transform: translateY(-1px); background: rgb(var(--surface)); }
 
+/* ── Inputs ───────────────────────────────────────────────── */
 .brut-input {
   background: rgb(var(--surface));
   color: rgb(var(--bone));
-  border: 2px solid #000;
-  box-shadow: inset 2px 2px 0 #000;
-  padding: 10px 12px;
-  font-family: 'Space Mono', monospace;
+  border: 1px solid rgb(var(--line));
+  border-radius: 10px;
+  box-shadow: none;
+  padding: 11px 13px;
   width: 100%;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
 }
-.brut-input:focus { outline: 2px solid #F7931A; outline-offset: 2px; }
+.brut-input:focus {
+  outline: none;
+  border-color: rgb(var(--orange));
+  box-shadow: 0 0 0 3px rgb(var(--orange) / 0.16);
+}
 
 /*
   Explicit alpha utilities. Defined manually so they survive a stale Tailwind
   JIT build (tailwind.config.ts changes don't always hot-reload in next dev).
-  These mirror Tailwind's `text-bone/<n>` and `bg-orange/<n>` and `bg-surface/<n>` syntax.
+  These mirror Tailwind's `text-bone/<n>`, `bg-orange/<n>`, `bg-surface/<n>`.
 */
 @layer utilities {
   .text-bone\/30 { color: rgb(var(--bone) / 0.3); }
@@ -104,14 +124,17 @@ body {
   .text-bone\/90 { color: rgb(var(--bone) / 0.9); }
   .text-bone { color: rgb(var(--bone) / 1); }
 
+  .text-dim { color: rgb(var(--dim) / 1); }
+  .text-faint { color: rgb(var(--faint) / 1); }
+
   .bg-bone\/5 { background-color: rgb(var(--bone) / 0.05); }
   .bg-bone\/10 { background-color: rgb(var(--bone) / 0.1); }
   .bg-surface { background-color: rgb(var(--surface) / 1); }
   .bg-panel { background-color: rgb(var(--panel) / 1); }
   .bg-bg { background-color: rgb(var(--bg) / 1); }
 
-  .bg-orange\/10 { background-color: rgb(247 147 26 / 0.1); }
-  .bg-orange\/20 { background-color: rgb(247 147 26 / 0.2); }
+  .bg-orange\/10 { background-color: rgb(var(--orange) / 0.1); }
+  .bg-orange\/20 { background-color: rgb(var(--orange) / 0.2); }
 
   .border-line { border-color: rgb(var(--line) / 1); }
 }

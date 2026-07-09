@@ -16,19 +16,19 @@ export default function AgentInput({ onSend }: { onSend: (text: string) => void 
   };
 
   return (
-    <form onSubmit={submit} className="border-t-2 border-black p-3 flex gap-2">
+    <form onSubmit={submit} className="border-t-2 border-line p-3 flex gap-2">
       <input
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={busy ? 'Working…' : 'Ask the agent…'}
         disabled={busy}
-        className="flex-1 bg-surface border-2 border-black px-3 py-2 font-mono text-xs disabled:opacity-50"
+        className="flex-1 bg-surface border border-line rounded-xl px-3 py-2 font-mono text-xs disabled:opacity-50"
       />
       <button
         type="submit"
         disabled={busy || !text.trim()}
-        className="border-2 border-black bg-orange text-ink px-3 disabled:opacity-50 hover:-translate-x-[1px] hover:-translate-y-[1px] transition"
+        className="border border-line rounded-xl bg-orange text-ink px-3 disabled:opacity-50 hover:-translate-x-[1px] hover:-translate-y-[1px] transition"
       >
         <Send className="w-4 h-4" strokeWidth={2.5} />
       </button>

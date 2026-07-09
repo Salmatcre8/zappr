@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   description: 'Unified Nostr feed, Lightning wallet, and AI agent.',
 };
 
-const themeInit = `try{var t=localStorage.getItem('zappr-theme');if(t==='light')document.documentElement.classList.add('light');}catch(e){}`;
+// Light (warm bone) is the default; only honour an explicit 'dark' choice.
+const themeInit = `try{var t=localStorage.getItem('zappr-theme');if(t!=='dark')document.documentElement.classList.add('light');}catch(e){document.documentElement.classList.add('light');}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -226,7 +226,7 @@ export default function LoginPanel() {
             type="button"
             onClick={handleStartFresh}
             disabled={busy}
-            className="brut-btn w-full flex items-center justify-center gap-2 bg-volt text-ink"
+            className="brut-btn w-full flex items-center justify-center gap-2 bg-orange text-ink"
           >
             {mode === 'fresh' ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -347,7 +347,7 @@ export default function LoginPanel() {
         </div>
 
         {error && (
-          <div className="border-2 border-orange bg-orange/10 text-orange font-mono text-xs p-3">
+          <div className="border border-orange bg-orange/10 text-orange font-mono text-xs p-3">
             {error}
           </div>
         )}

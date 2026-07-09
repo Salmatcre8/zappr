@@ -161,7 +161,7 @@ export default function SendCard() {
             "In one short sentence, explain what a Lightning address is to a complete beginner — like email but for sats. Then in another sentence, what a BOLT11 invoice is. Plain language, no jargon."
           )
         }
-        className="w-full flex items-center justify-center gap-1.5 font-mono text-[10px] text-bone/50 hover:text-volt transition"
+        className="w-full flex items-center justify-center gap-1.5 font-mono text-[10px] text-bone/50 hover:text-orange transition"
       >
         <HelpCircle className="w-3 h-3" />
         Lightning address vs BOLT11?

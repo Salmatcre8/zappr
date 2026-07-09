@@ -36,14 +36,14 @@ export default function WalletPanel() {
         </div>
         <button
           onClick={refresh}
-          className="border-2 border-black bg-panel p-1.5 hover:bg-orange hover:text-ink transition"
+          className="border border-line rounded-xl bg-panel p-1.5 hover:bg-orange hover:text-ink transition"
           aria-label="Refresh"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
-      <div className="bg-surface border-2 border-black p-4">
+      <div className="bg-surface border border-line rounded-xl p-4">
         <div className="font-mono text-[10px] uppercase tracking-widest text-bone/50">Balance</div>
         <div className="font-mono text-3xl font-bold text-orange mt-1">
           {balance !== null ? balance.toLocaleString() : '—'}
@@ -68,14 +68,14 @@ export default function WalletPanel() {
                 <li key={i} className="flex items-center justify-between text-[11px] font-mono border border-line px-2 py-1.5">
                   <div className="flex items-center gap-2 min-w-0">
                     {incoming ? (
-                      <ArrowDownLeft className="w-3 h-3 text-volt shrink-0" />
+                      <ArrowDownLeft className="w-3 h-3 text-[#33c46f] shrink-0" />
                     ) : (
-                      <ArrowUpRight className="w-3 h-3 text-orange shrink-0" />
+                      <ArrowUpRight className="w-3 h-3 text-dim shrink-0" />
                     )}
                     <span className="truncate text-bone/70">{t.description || (incoming ? 'received' : 'sent')}</span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className={incoming ? 'text-volt' : 'text-orange'}>
+                    <span className={incoming ? 'text-[#33c46f]' : 'text-dim'}>
                       {incoming ? '+' : '-'}{t.amount}
                     </span>
                     {when ? (

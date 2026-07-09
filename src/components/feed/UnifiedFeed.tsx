@@ -88,14 +88,14 @@ export default function UnifiedFeed() {
 
   return (
     <div className="brut-panel h-full flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b-2 border-black">
+      <div className="flex items-center justify-between px-4 py-3 border-b-2 border-line">
         <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-bone/60">
-          <Radio className="w-3.5 h-3.5 text-volt" /> Unified Feed
+          <Radio className="w-3.5 h-3.5 text-orange" /> Unified Feed
         </div>
         <button
           onClick={manualRefresh}
           disabled={refreshing || loadingFeed}
-          className="border-2 border-black bg-surface p-1.5 hover:bg-orange hover:text-ink transition"
+          className="border border-line rounded-xl bg-surface p-1.5 hover:bg-orange hover:text-ink transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing || loadingFeed ? 'animate-spin' : ''}`} />
         </button>
