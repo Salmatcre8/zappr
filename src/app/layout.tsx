@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from "next/script";
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,8 +14,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <script defer src="https://cloud.umami.is/script.js" data-website-id="bc0c10a2-0c70-4d8c-b7eb-d0520c442f1d"></script>
-        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
+  <Script
+    src="https://cloud.umami.is/script.js"
+    data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+    strategy="afterInteractive"
+  />
+)}
+   <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
       <body>{children}</body>
     </html>
