@@ -13,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="bc0c10a2-0c70-4d8c-b7eb-d0520c442f1d"></script>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
       <body>{children}</body>
