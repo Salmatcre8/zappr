@@ -1,0 +1,146 @@
+import NDK, { NDKEvent, NDKFilter, NDKKind, NDKUser } from '@nostr-dev-kit/ndk';
+import type { FeedNote, NostrProfile } from '@/types/nostr';
+import { hexToNpub } from './keys';
+
+export async function fetchFollowList(
+  ndk: NDK,
+  pubkey: string
+): Promise<{ follows: string[]; createdAt: number } | null> {
+  // Fetch all kind:3 events for the user across relays and pick the newest.
+  // Relays can return stale contact lists, so we explicitly sort by created_at.
+  const filter: NDKFilter = { kinds: [3 as NDKKind], authors: [pubkey] };
+  const events = await ndk.fetchEvents(filter);
+  const latest = Array.from(events).sort(
+    (a, b) => (b.created_at || 0) - (a.created_at || 0)
+  )[0];
+  if (!latest) return null;
+  const pubs = latest.tags
+    .filter((t) => t[0] === 'p' && typeof t[1] === 'string' && t[1].length === 64)
+    .map((t) => t[1]);
+  return {
+    follows: Array.from(new Set(pubs)),
+    createdAt: latest.created_at || 0,
+  };
+}
+
+export async function fetchFeed(
+  ndk: NDK,
+  authors: string[],
+  limit = 40,
+  until?: number
+): Promise<FeedNote[]> {
+  if (authors.length === 0) return [];
+  const filter: NDKFilter = { kinds: [1 as NDKKind], authors, limit };
+  if (until) filter.until = until;
+  const events = await ndk.fetchEvents(filter);
+  return sortNotes(events);
+}
+
+/*
+  Logged-out (or empty-follows) feed: recent kind:1 notes from whatever the
+  connected relays surface. Gives a first-run user something real to scroll
+  before they log in / follow anyone.
+*/
+export async function fetchGlobalFeed(
+  ndk: NDK,
+  limit = 50,
+  until?: number
+): Promise<FeedNote[]> {
+  const filter: NDKFilter = { kinds: [1 as NDKKind], limit };
+  if (until) filter.until = until;
+  const events = await ndk.fetchEvents(filter);
+  return sortNotes(events);
+}
+
+function sortNotes(events: Set<NDKEvent>): FeedNote[] {
+  const notes: FeedNote[] = [];
+  for (const ev of events) {
+    notes.push({
+      id: ev.id,
+      pubkey: ev.pubkey,
+      content: ev.content,
+      createdAt: ev.created_at || 0,
+      tags: ev.tags,
+    });
+  }
+  notes.sort((a, b) => b.createdAt - a.createdAt);
+  return notes;
+}
+
+export async function fetchProfile(ndk: NDK, pubkey: string): Promise<NostrProfile | null> {
+  try {
+    const user = new NDKUser({ pubkey });
+    user.ndk = ndk;
+    const p = await user.fetchProfile();
+    if (!p) return { npub: hexToNpub(pubkey), pubkey };
+    return {
+      npub: hexToNpub(pubkey),
+      pubkey,
+      name: p.name,
+      displayName: p.displayName,
+      picture: p.image,
+      nip05: p.nip05,
+      lud16: p.lud16,
+      about: p.about,
+    };
+  } catch {
+    return { npub: hexToNpub(pubkey), pubkey };
+  }
+}
+
+/*
+  Batched profile fetch: one kind:0 subscription for all authors instead of
+  N× NDKUser.fetchProfile round-trips (mobile radios hate chatty sockets).
+*/
+export async function fetchProfiles(
+  ndk: NDK,
+  pubkeys: string[]
+): Promise<Record<string, NostrProfile>> {
+  const out: Record<string, NostrProfile> = {};
+  if (pubkeys.length === 0) return out;
+  const filter: NDKFilter = { kinds: [0 as NDKKind], authors: Array.from(new Set(pubkeys)) };
+  const events = await ndk.fetchEvents(filter).catch(() => new Set<NDKEvent>());
+  const latest: Record<string, NDKEvent> = {};
+  for (const ev of events) {
+    const prev = latest[ev.pubkey];
+    if (!prev || (ev.created_at || 0) > (prev.created_at || 0)) latest[ev.pubkey] = ev;
+  }
+  for (const [pubkey, ev] of Object.entries(latest)) {
+    try {
+      const meta = JSON.parse(ev.content) as Record<string, string | undefined>;
+      out[pubkey] = {
+        npub: hexToNpub(pubkey),
+        pubkey,
+        name: meta.name,
+        displayName: meta.display_name || meta.displayName,
+        picture: meta.picture,
+        nip05: meta.nip05,
+        lud16: meta.lud16,
+        about: meta.about,
+      };
+    } catch {
+      out[pubkey] = { npub: hexToNpub(pubkey), pubkey };
+    }
+  }
+  return out;
+}
+
+export async function publishNote(ndk: NDK, content: string): Promise<string> {
+  const ev = new NDKEvent(ndk);
+  ev.kind = 1;
+  ev.content = content;
+  await ev.publish();
+  return ev.id;
+}
+
+export async function publishContacts(
+  ndk: NDK,
+  pubkeys: string[]
+): Promise<{ id: string; createdAt: number }> {
+  const ev = new NDKEvent(ndk);
+  ev.kind = 3;
+  ev.tags = pubkeys.map((p) => ['p', p]);
+  ev.content = '';
+  await ev.publish();
+  return { id: ev.id, createdAt: ev.created_at || Math.floor(Date.now() / 1000) };
+}
