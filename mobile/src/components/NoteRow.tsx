@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Avatar from './Avatar';
 import { mono, useZapprTheme } from '@/lib/theme';
@@ -9,8 +10,12 @@ import type { FeedNote, NostrProfile } from '@/types/nostr';
   Feed row per the mobile mockup: flat list item over a soft hairline (no
   card chrome), hue avatar, name · time, body in text2, hashtags in orange
   mono, and a pill zap button that flips to orange once zapped.
+
+  Memoized: FlatList re-renders every visible row on each state change
+  (profile hydration batches, zap state) unless props are referentially
+  stable — keep the props primitive or store-stable.
 */
-export default function NoteRow({
+function NoteRow({
   note,
   profile,
   zapped,
@@ -101,3 +106,5 @@ export default function NoteRow({
     </View>
   );
 }
+
+export default memo(NoteRow);

@@ -155,6 +155,11 @@ export default function FeedScreen() {
     }
   };
 
+  const onZapPress = useCallback(
+    (note: FeedNote, profile: NostrProfile) => setZapTarget({ note, profile }),
+    []
+  );
+
   const approveZap = async () => {
     if (!zapTarget || !walletAdapter) return;
     setZapBusy(true);
@@ -267,13 +272,13 @@ export default function FeedScreen() {
               profile={profiles[item.pubkey]}
               zapped={!!zapped[item.id]}
               zapAmount={DEFAULT_ZAP_SATS}
-              onZap={
-                walletAdapter
-                  ? (note, profile) => setZapTarget({ note, profile })
-                  : undefined
-              }
+              onZap={walletAdapter ? onZapPress : undefined}
             />
           )}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={7}
+          removeClippedSubviews
           contentContainerStyle={{ paddingBottom: 24 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={t.orange} />
