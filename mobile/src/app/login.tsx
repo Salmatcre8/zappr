@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import ZapprMark from '@/components/ZapprMark';
 import {
   mono, monoBold, sansBold, sansSemiBold, sectionLabel, useZapprTheme,
 } from '@/lib/theme';
@@ -133,28 +134,22 @@ export default function LoginScreen() {
           contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 22, paddingVertical: 28 }}
         >
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            {/* Brand header — matches the web login: ⚡ mark + mono wordmark */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 26 }}>
-              <View
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 15,
-                  backgroundColor: t.orange,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Ionicons name="flash" size={26} color={t.onOrange} />
-              </View>
-              <View>
-                <Text style={[monoBold, { color: t.bone, fontSize: 30, lineHeight: 34 }]}>
-                  zappr
-                </Text>
-                <Text style={[mono, { color: t.faint, fontSize: 10, letterSpacing: 2 }]}>
-                  BITCOIN · NOSTR · AI
+            {/* Brand wordmark (guidelines §03): the mark IS the z — "appr" completes it */}
+            <View style={{ marginBottom: 26 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+                <ZapprMark size={40} color={t.orange} />
+                <Text
+                  style={[
+                    monoBold,
+                    { color: t.bone, fontSize: 36, lineHeight: 40, letterSpacing: -2 },
+                  ]}
+                >
+                  appr
                 </Text>
               </View>
+              <Text style={[mono, { color: t.faint, fontSize: 10, letterSpacing: 2, marginTop: 6 }]}>
+                BITCOIN · NOSTR · AI
+              </Text>
             </View>
 
             <View

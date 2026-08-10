@@ -9,8 +9,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ChatMessage from '@/components/ChatMessage';
 import ConfirmCard from '@/components/ConfirmCard';
+import ZapprMark from '@/components/ZapprMark';
 import { type ConfirmRow } from '@/components/ConfirmSheet';
-import { mono, monoBold, sansBold, useZapprTheme } from '@/lib/theme';
+import { mono, sansBold, useZapprTheme } from '@/lib/theme';
 import { callAgent } from '@/lib/agent/api';
 import { executeTool } from '@/lib/agent/executor';
 import { CONFIRM_TOOLS } from '@/lib/agent/tools';
@@ -179,7 +180,7 @@ export default function AgentScreen() {
                 justifyContent: 'center',
               }}
             >
-              <Text style={[monoBold, { color: t.onOrange, fontSize: 13 }]}>Z</Text>
+              <ZapprMark size={18} color={t.onOrange} />
             </View>
             <Text style={[sansBold, { color: t.bone, fontSize: 16 }]}>zappr agent</Text>
           </View>
