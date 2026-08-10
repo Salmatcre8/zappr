@@ -1,6 +1,17 @@
-import NDK, { NDKEvent, NDKFilter, NDKKind, NDKUser } from '@nostr-dev-kit/ndk';
+import NDK, { NDKEvent, NDKFilter, NDKKind, NDKRelaySet, NDKUser } from '@nostr-dev-kit/ndk';
 import type { FeedNote, NostrProfile } from '@/types/nostr';
 import { hexToNpub } from './keys';
+import { DEFAULT_RELAYS } from './ndk';
+
+/*
+  Publish to OUR relay set explicitly. Without this, NDK also targets the
+  signed-in user's advertised personal relays (NIP-65) — connections the
+  app never opened — and publishes sit "waiting for connection" while NDK
+  logs its noisy "NDK BUG: relay not found in pool" line.
+*/
+function appRelays(ndk: NDK): NDKRelaySet {
+  return NDKRelaySet.fromRelayUrls(DEFAULT_RELAYS, ndk);
+}
 
 /*
   Every relay read goes through fetchEventsWithTimeout instead of
@@ -171,7 +182,7 @@ export async function publishNote(ndk: NDK, content: string): Promise<string> {
   const ev = new NDKEvent(ndk);
   ev.kind = 1;
   ev.content = content;
-  await ev.publish();
+  await ev.publish(appRelays(ndk));
   return ev.id;
 }
 
@@ -183,6 +194,6 @@ export async function publishContacts(
   ev.kind = 3;
   ev.tags = pubkeys.map((p) => ['p', p]);
   ev.content = '';
-  await ev.publish();
+  await ev.publish(appRelays(ndk));
   return { id: ev.id, createdAt: ev.created_at || Math.floor(Date.now() / 1000) };
 }
