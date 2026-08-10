@@ -3,7 +3,7 @@
   (Zappr Mobile Standalone) so the app matches the approved mockup exactly.
   Dark and warm-bone light, resolved from the OS color scheme.
 */
-import { Platform, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 
 export type ZapprPalette = {
   bg: string;
@@ -73,9 +73,18 @@ export function useZapprTheme(): ZapprPalette {
   return scheme === 'dark' ? palettes.dark : palettes.light;
 }
 
-export const mono = {
-  fontFamily: Platform.select({ ios: 'Menlo', default: 'monospace' }),
-} as const;
+/*
+  Brand fonts — the same pair as web (globals.css): Space Mono for the
+  wordmark/labels/numbers, Inter for body and buttons. Loaded in the root
+  layout via @expo-google-fonts; these families must match those imports.
+*/
+export const mono = { fontFamily: 'SpaceMono_400Regular' } as const;
+export const monoBold = { fontFamily: 'SpaceMono_700Bold' } as const;
+export const sans = { fontFamily: 'Inter_400Regular' } as const;
+export const sansMedium = { fontFamily: 'Inter_500Medium' } as const;
+export const sansSemiBold = { fontFamily: 'Inter_600SemiBold' } as const;
+export const sansBold = { fontFamily: 'Inter_700Bold' } as const;
+export const sansHeavy = { fontFamily: 'Inter_800ExtraBold' } as const;
 
 /** mockup section label: Space Mono 10.5px letter-spaced uppercase */
 export const sectionLabel = (t: ZapprPalette) =>

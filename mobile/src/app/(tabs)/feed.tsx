@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import NoteRow from '@/components/NoteRow';
 import ConfirmSheet from '@/components/ConfirmSheet';
-import { useZapprTheme } from '@/lib/theme';
+import { sansHeavy, useZapprTheme } from '@/lib/theme';
 import { initNDK } from '@/lib/nostr/ndk';
 import {
   fetchFeed,
@@ -200,7 +200,7 @@ export default function FeedScreen() {
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
           <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: t.orange }} />
-          <Text style={{ color: t.bone, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 }}>
+          <Text style={[sansHeavy, { color: t.bone, fontSize: 22, letterSpacing: -0.4 }]}>
             Feed
           </Text>
         </View>

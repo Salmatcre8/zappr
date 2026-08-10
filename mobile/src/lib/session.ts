@@ -69,6 +69,28 @@ export async function loginWithNsec(nsec: string, nwc?: string): Promise<void> {
   }
 }
 
+/**
+ * Seedless passkey login (issue #6, web's "Create with FaceID / Fingerprint"):
+ * one passkey + PRF → deterministic nsec + Liquid mnemonic, nothing to write
+ * down. Requires the dev build (native passkeys) and the domain association.
+ */
+export async function loginWithPasskey(create: boolean): Promise<void> {
+  const { createPasskeyNative, discoverPasskeyNative } = await import('@/lib/auth/native-passkey');
+  const { deriveNsecFromPrf, deriveMnemonicFromPrf } = await import('@/lib/auth/derive');
+  const out = create
+    ? await createPasskeyNative('zappr account')
+    : await discoverPasskeyNative();
+  const { nsec } = deriveNsecFromPrf(out.nostrPrf);
+  const mnemonic = deriveMnemonicFromPrf(out.liquidPrf);
+  await activate(nsec);
+  await saveSecret(VAULT_KEYS.nsec, nsec);
+  // Wallet mnemonic waits for the Breez native SDK (#7) but is derived and
+  // vaulted now so Backup can show it and the wallet can init later.
+  await saveSecret(VAULT_KEYS.breezMnemonic, mnemonic);
+  await AsyncStorage.setItem(SESSION_FLAG, JSON.stringify({ method: 'passkey' }));
+  hydrateSavedWallet();
+}
+
 /** Biometric-gated unlock of a saved identity (explicit path after logout). */
 export async function unlockSavedIdentity(): Promise<boolean> {
   const nsec = await getSecret(VAULT_KEYS.nsec, { gate: 'Unlock your zappr identity' });

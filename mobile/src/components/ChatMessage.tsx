@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native';
-import { mono, useZapprTheme } from '@/lib/theme';
+import { mono, sans, useZapprTheme } from '@/lib/theme';
 import type { AgentContentBlock, AgentMessage } from '@/types/agent';
 
 function textOf(content: AgentMessage['content']): string {
@@ -49,7 +49,7 @@ export default function ChatMessage({ message }: { message: AgentMessage }) {
             paddingVertical: 11,
           }}
         >
-          <Text style={{ color: t.bone, fontSize: 14.5, lineHeight: 22 }}>{text}</Text>
+          <Text style={[sans, { color: t.bone, fontSize: 14.5, lineHeight: 22 }]}>{text}</Text>
         </View>
       </View>
     );
@@ -68,7 +68,7 @@ export default function ChatMessage({ message }: { message: AgentMessage }) {
             paddingVertical: 11,
           }}
         >
-          <Text style={{ color: t.bone, fontSize: 14.5, lineHeight: 22 }}>{text}</Text>
+          <Text style={[sans, { color: t.bone, fontSize: 14.5, lineHeight: 22 }]}>{text}</Text>
         </View>
       ) : null}
       {tools.map((name) => (

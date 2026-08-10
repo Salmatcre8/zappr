@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import BottomSheet from './BottomSheet';
-import { mono, useZapprTheme } from '@/lib/theme';
+import { mono, sansBold, sansSemiBold, useZapprTheme } from '@/lib/theme';
 
 /*
   Confirm-before-send — EVERY payment, zap, or public post goes through an
@@ -37,9 +37,7 @@ export default function ConfirmSheet({
       >
         CONFIRM BEFORE SEND
       </Text>
-      <Text style={{ color: t.bone, fontSize: 15.5, fontWeight: '700', marginBottom: 10 }}>
-        {title}
-      </Text>
+      <Text style={[sansBold, { color: t.bone, fontSize: 15.5, marginBottom: 10 }]}>{title}</Text>
 
       <View style={{ gap: 2, marginBottom: 4 }}>
         {rows.map((r) => (
@@ -89,7 +87,7 @@ export default function ConfirmSheet({
           {busy ? (
             <ActivityIndicator color={t.onOrange} />
           ) : (
-            <Text style={{ color: t.onOrange, fontWeight: '700', fontSize: 14 }}>Approve</Text>
+            <Text style={[sansBold, { color: t.onOrange, fontSize: 14 }]}>Approve</Text>
           )}
         </Pressable>
         <Pressable
@@ -104,7 +102,7 @@ export default function ConfirmSheet({
             alignItems: 'center',
           }}
         >
-          <Text style={{ color: t.dim, fontWeight: '600', fontSize: 14 }}>Cancel</Text>
+          <Text style={[sansSemiBold, { color: t.dim, fontSize: 14 }]}>Cancel</Text>
         </Pressable>
       </View>
     </BottomSheet>

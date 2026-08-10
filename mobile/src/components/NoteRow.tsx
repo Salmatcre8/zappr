@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Avatar from './Avatar';
-import { mono, useZapprTheme } from '@/lib/theme';
+import { mono, sans, sansSemiBold, useZapprTheme } from '@/lib/theme';
 import { timeAgo } from '@/lib/relative-time';
 import { truncateNpub } from '@/lib/nostr/keys';
 import type { FeedNote, NostrProfile } from '@/types/nostr';
@@ -51,12 +51,12 @@ function NoteRow({
         <Avatar pubkey={note.pubkey} picture={profile?.picture} name={name} size={40} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 7, flexWrap: 'wrap' }}>
-            <Text numberOfLines={1} style={{ color: t.bone, fontWeight: '600', fontSize: 14.5 }}>
+            <Text numberOfLines={1} style={[sansSemiBold, { color: t.bone, fontSize: 14.5 }]}>
               {name}
             </Text>
             <Text style={{ color: t.faint, fontSize: 12 }}>· {timeAgo(note.createdAt)}</Text>
           </View>
-          <Text style={{ color: t.text2, fontSize: 14.5, lineHeight: 22, marginTop: 5 }}>
+          <Text style={[sans, { color: t.text2, fontSize: 14.5, lineHeight: 22, marginTop: 5 }]}>
             {note.content}
           </Text>
           <View

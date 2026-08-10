@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, View } from 'react-native';
-import { useZapprTheme } from '@/lib/theme';
+import { sansBold, useZapprTheme } from '@/lib/theme';
 
 /*
   Bottom sheet per the mockup: dim backdrop, panel with 22px top radius and a
@@ -54,9 +54,7 @@ export default function BottomSheet({
             }}
           />
           {title ? (
-            <Text style={{ color: t.bone, fontSize: 17, fontWeight: '700', marginBottom: 14 }}>
-              {title}
-            </Text>
+            <Text style={[sansBold, { color: t.bone, fontSize: 17, marginBottom: 14 }]}>{title}</Text>
           ) : null}
           {children}
         </View>

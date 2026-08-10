@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Avatar from '@/components/Avatar';
 import ConfirmSheet from '@/components/ConfirmSheet';
-import { mono, sectionLabel, useZapprTheme } from '@/lib/theme';
+import { mono, sansHeavy, sectionLabel, useZapprTheme } from '@/lib/theme';
 import { truncateNpub } from '@/lib/nostr/keys';
 import { logout } from '@/lib/session';
 import { wipeAll } from '@/lib/vault';
@@ -87,7 +87,7 @@ export default function SettingsScreen() {
           >
             <Ionicons name="chevron-back" size={17} color={t.bone} />
           </Pressable>
-          <Text style={{ color: t.bone, fontSize: 19, fontWeight: '800', letterSpacing: -0.4 }}>
+          <Text style={[sansHeavy, { color: t.bone, fontSize: 19, letterSpacing: -0.4 }]}>
             Settings
           </Text>
         </View>

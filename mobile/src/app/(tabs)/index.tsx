@@ -8,7 +8,7 @@ import QRCode from 'react-native-qrcode-svg';
 
 import BottomSheet from '@/components/BottomSheet';
 import ConfirmSheet from '@/components/ConfirmSheet';
-import { mono, sectionLabel, useZapprTheme } from '@/lib/theme';
+import { mono, monoBold, sansBold, sansHeavy, sansSemiBold, sectionLabel, useZapprTheme } from '@/lib/theme';
 import { timeAgo } from '@/lib/relative-time';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
 import { lnAddressToInvoice } from '@/lib/wallet/lightning';
@@ -28,6 +28,21 @@ export default function WalletScreen() {
   const [nwcInput, setNwcInput] = useState('');
   const [hasSavedNwc, setHasSavedNwc] = useState(false);
   const [sheet, setSheet] = useState<Sheet>(null);
+  const [mnemonicWords, setMnemonicWords] = useState<string[] | null>(null);
+
+  /*
+    Backup sheet: passkey/Breez identities have a derived mnemonic in the
+    vault — show it biometric-gated (mockup's 12-word grid). NWC-only users
+    get the explanation instead.
+  */
+  const openBackup = async () => {
+    setMnemonicWords(null);
+    setSheet('backup');
+    const phrase = await getSecret(VAULT_KEYS.breezMnemonic, {
+      gate: 'Show your recovery phrase',
+    });
+    if (phrase) setMnemonicWords(phrase.split(' '));
+  };
 
   // receive
   const [recvAmount, setRecvAmount] = useState('');
@@ -149,7 +164,7 @@ export default function WalletScreen() {
       }}
     >
       <Ionicons name={icon} size={17} color={t.orange} />
-      <Text style={{ fontSize: 12.5, fontWeight: '600', color: t.bone }}>{label}</Text>
+      <Text style={[sansSemiBold, { fontSize: 12.5, color: t.bone }]}>{label}</Text>
     </Pressable>
   );
 
@@ -177,7 +192,7 @@ export default function WalletScreen() {
             justifyContent: 'space-between',
           }}
         >
-          <Text style={{ color: t.bone, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 }}>
+          <Text style={[sansHeavy, { color: t.bone, fontSize: 24, letterSpacing: -0.5 }]}>
             Wallet
           </Text>
           <Pressable
@@ -239,7 +254,7 @@ export default function WalletScreen() {
                 {connecting ? (
                   <ActivityIndicator color={t.onOrange} />
                 ) : (
-                  <Text style={{ color: t.onOrange, fontWeight: '700', fontSize: 15 }}>
+                  <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
                     Connect via NWC
                   </Text>
                 )}
@@ -309,12 +324,7 @@ export default function WalletScreen() {
                 <View
                   style={{ flexDirection: 'row', alignItems: 'baseline', gap: 9, marginTop: 10 }}
                 >
-                  <Text
-                    style={[
-                      mono,
-                      { color: t.bone, fontWeight: '700', fontSize: 38, letterSpacing: -0.8 },
-                    ]}
-                  >
+                  <Text style={[monoBold, { color: t.bone, fontSize: 38, letterSpacing: -0.8 }]}>
                     {balance !== null ? balance.toLocaleString() : '—'}
                   </Text>
                   <Text style={{ color: t.dim, fontSize: 13 }}>sats</Text>
@@ -328,7 +338,7 @@ export default function WalletScreen() {
             <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 18, paddingTop: 16 }}>
               {actionBtn('Receive', 'arrow-down-outline', () => { setInvoice(null); setSheet('receive'); })}
               {actionBtn('Send', 'arrow-up-outline', () => setSheet('send'))}
-              {actionBtn('Backup', 'key-outline', () => setSheet('backup'))}
+              {actionBtn('Backup', 'key-outline', openBackup)}
             </View>
 
             <Text
@@ -473,7 +483,7 @@ export default function WalletScreen() {
               {makingInvoice ? (
                 <ActivityIndicator color={t.onOrange} />
               ) : (
-                <Text style={{ color: t.onOrange, fontWeight: '700', fontSize: 15 }}>
+                <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
                   Generate invoice
                 </Text>
               )}
@@ -516,7 +526,7 @@ export default function WalletScreen() {
               opacity: !sendTo.trim() || (isLnAddress && !sendAmount) ? 0.5 : 1,
             }}
           >
-            <Text style={{ color: t.onOrange, fontWeight: '700', fontSize: 15 }}>Send payment</Text>
+            <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>Send payment</Text>
           </Pressable>
         </View>
       </BottomSheet>
@@ -530,11 +540,36 @@ export default function WalletScreen() {
         <Text style={{ color: t.dim, fontSize: 13, lineHeight: 20, marginBottom: 10 }}>
           Biometric-gated. Never leaves this device.
         </Text>
-        <Text style={{ color: t.dim, fontSize: 13.5, lineHeight: 20 }}>
-          A recovery phrase arrives with the self-custodial Breez wallet (issues #6 and #7). Your
-          NWC connection string is already saved in the device keystore — your funds live in the
-          connected wallet app, which holds its own backup.
-        </Text>
+        {mnemonicWords ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {mnemonicWords.map((w, i) => (
+              <View
+                key={`${i}-${w}`}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'baseline',
+                  gap: 5,
+                  paddingHorizontal: 9,
+                  paddingVertical: 9,
+                  borderRadius: 9,
+                  backgroundColor: t.surface,
+                  width: '31%',
+                }}
+              >
+                <Text style={[mono, { fontSize: 9.5, color: t.faint }]}>
+                  {String(i + 1).padStart(2, '0')}
+                </Text>
+                <Text style={[mono, { fontSize: 12.5, color: t.bone }]}>{w}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={{ color: t.dim, fontSize: 13.5, lineHeight: 20 }}>
+            No derived wallet on this device yet. Log in with a passkey to get a seedless wallet
+            whose phrase appears here, or keep using NWC — your funds live in the connected wallet
+            app, which holds its own backup.
+          </Text>
+        )}
       </BottomSheet>
 
       <ConfirmSheet
