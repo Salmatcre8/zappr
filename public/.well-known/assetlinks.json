@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "xyz.usezappr.app",
+      "sha256_cert_fingerprints": [
+        "5F:D8:62:6B:3A:8E:52:4E:64:DA:BD:50:34:E1:FE:17:3B:23:35:A1:98:87:7E:3C:73:DB:7B:1A:35:5F:C3:22"
+      ]
+    }
+  }
+]
