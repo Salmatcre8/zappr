@@ -1,10 +1,30 @@
-import { Redirect } from 'expo-router';
+import { router } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+
+import { useZapprTheme } from '@/lib/theme';
+import { restoreSession } from '@/lib/session';
 
 /*
-  Cold start always lands on the login screen (mockup behavior). It offers
-  biometric unlock when an identity is saved, nsec login, or browsing
-  without an identity.
+  Cold-start bootstrap: silently restore the previous session (web
+  refresh-safety parity) and land on the app; otherwise show login.
 */
 export default function Index() {
-  return <Redirect href="/login" />;
+  const t = useZapprTheme();
+
+  useEffect(() => {
+    let cancelled = false;
+    restoreSession().then((ok) => {
+      if (!cancelled) router.replace(ok ? '/(tabs)' : '/login');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: t.bg }}>
+      <ActivityIndicator color={t.orange} />
+    </View>
+  );
 }
