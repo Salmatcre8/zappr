@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { router } from 'expo-router';
@@ -84,7 +85,7 @@ export default function SettingsScreen() {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ color: t.bone, fontSize: 16 }}>←</Text>
+            <Ionicons name="chevron-back" size={17} color={t.bone} />
           </Pressable>
           <Text style={{ color: t.bone, fontSize: 19, fontWeight: '800', letterSpacing: -0.4 }}>
             Settings

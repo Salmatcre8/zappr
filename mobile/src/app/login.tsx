@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -45,11 +46,16 @@ export default function LoginScreen() {
     setBusy(false);
   };
 
-  const paths = [
+  const paths: {
+    icon: keyof typeof Ionicons.glyphMap;
+    title: string;
+    sub: string;
+    onPress: () => void;
+  }[] = [
     ...(hasSavedNsec
       ? [
           {
-            mark: '⊙',
+            icon: 'finger-print' as const,
             title: 'Unlock with biometric',
             sub: 'Open your saved identity from the device vault',
             onPress: doUnlock,
@@ -57,13 +63,13 @@ export default function LoginScreen() {
         ]
       : []),
     {
-      mark: '#',
+      icon: 'key-outline',
       title: 'Enter nsec',
       sub: 'Paste an nsec1… — stored in the device keystore',
       onPress: () => setShowNsec((v) => !v),
     },
     {
-      mark: '→',
+      icon: 'arrow-forward',
       title: 'Browse without logging in',
       sub: 'Read the global feed; connect a wallet anytime',
       onPress: enter,
@@ -168,9 +174,7 @@ export default function LoginScreen() {
                       justifyContent: 'center',
                     }}
                   >
-                    <Text style={[mono, { color: t.dim, fontWeight: '700', fontSize: 12 }]}>
-                      {p.mark}
-                    </Text>
+                    <Ionicons name={p.icon} size={14} color={t.dim} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: t.bone, fontWeight: '600', fontSize: 14 }}>{p.title}</Text>

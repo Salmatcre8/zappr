@@ -2,14 +2,56 @@ import NDK, { NDKEvent, NDKFilter, NDKKind, NDKUser } from '@nostr-dev-kit/ndk';
 import type { FeedNote, NostrProfile } from '@/types/nostr';
 import { hexToNpub } from './keys';
 
+/*
+  Every relay read goes through fetchEventsWithTimeout instead of
+  ndk.fetchEvents: fetchEvents resolves only when EVERY relay sends EOSE,
+  and on mobile networks one stalled relay means the promise never settles
+  (the feed spinner spins forever). This returns whatever arrived within
+  the window — partial results beat no results on a phone.
+*/
+const FETCH_TIMEOUT_MS = 8000;
+
+function fetchEventsWithTimeout(
+  ndk: NDK,
+  filter: NDKFilter,
+  ms = FETCH_TIMEOUT_MS
+): Promise<Set<NDKEvent>> {
+  return new Promise((resolve) => {
+    const events = new Map<string, NDKEvent>();
+    let settled = false;
+    const sub = ndk.subscribe(filter, { closeOnEose: true, groupable: false });
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      try {
+        sub.stop();
+      } catch {}
+      resolve(new Set(events.values()));
+    };
+    const timer = setTimeout(done, ms);
+    sub.on('event', (ev: NDKEvent) => {
+      events.set(ev.id, ev);
+    });
+    sub.on('eose', done);
+  });
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 export async function fetchFollowList(
   ndk: NDK,
   pubkey: string
 ): Promise<{ follows: string[]; createdAt: number } | null> {
-  // Fetch all kind:3 events for the user across relays and pick the newest.
+  // Fetch kind:3 events for the user across relays and pick the newest.
   // Relays can return stale contact lists, so we explicitly sort by created_at.
   const filter: NDKFilter = { kinds: [3 as NDKKind], authors: [pubkey] };
-  const events = await ndk.fetchEvents(filter);
+  const events = await fetchEventsWithTimeout(ndk, filter);
   const latest = Array.from(events).sort(
     (a, b) => (b.created_at || 0) - (a.created_at || 0)
   )[0];
@@ -32,7 +74,7 @@ export async function fetchFeed(
   if (authors.length === 0) return [];
   const filter: NDKFilter = { kinds: [1 as NDKKind], authors, limit };
   if (until) filter.until = until;
-  const events = await ndk.fetchEvents(filter);
+  const events = await fetchEventsWithTimeout(ndk, filter);
   return sortNotes(events);
 }
 
@@ -48,7 +90,7 @@ export async function fetchGlobalFeed(
 ): Promise<FeedNote[]> {
   const filter: NDKFilter = { kinds: [1 as NDKKind], limit };
   if (until) filter.until = until;
-  const events = await ndk.fetchEvents(filter);
+  const events = await fetchEventsWithTimeout(ndk, filter);
   return sortNotes(events);
 }
 
@@ -71,7 +113,7 @@ export async function fetchProfile(ndk: NDK, pubkey: string): Promise<NostrProfi
   try {
     const user = new NDKUser({ pubkey });
     user.ndk = ndk;
-    const p = await user.fetchProfile();
+    const p = await withTimeout(user.fetchProfile(), FETCH_TIMEOUT_MS, null);
     if (!p) return { npub: hexToNpub(pubkey), pubkey };
     return {
       npub: hexToNpub(pubkey),
@@ -99,7 +141,7 @@ export async function fetchProfiles(
   const out: Record<string, NostrProfile> = {};
   if (pubkeys.length === 0) return out;
   const filter: NDKFilter = { kinds: [0 as NDKKind], authors: Array.from(new Set(pubkeys)) };
-  const events = await ndk.fetchEvents(filter).catch(() => new Set<NDKEvent>());
+  const events = await fetchEventsWithTimeout(ndk, filter);
   const latest: Record<string, NDKEvent> = {};
   for (const ev of events) {
     const prev = latest[ev.pubkey];

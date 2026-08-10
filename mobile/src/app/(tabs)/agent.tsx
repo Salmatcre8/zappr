@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -294,7 +295,7 @@ export default function AgentScreen() {
                 opacity: busy || !draft.trim() ? 0.5 : 1,
               }}
             >
-              <Text style={{ color: t.onOrange, fontSize: 17, fontWeight: '700' }}>↑</Text>
+              <Ionicons name="arrow-up" size={18} color={t.onOrange} />
             </Pressable>
           </View>
         </View>

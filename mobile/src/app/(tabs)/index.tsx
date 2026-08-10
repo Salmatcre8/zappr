@@ -128,7 +128,11 @@ export default function WalletScreen() {
 
   const isLnAddress = sendTo.includes('@');
 
-  const actionBtn = (label: string, glyph: string, onPress: () => void) => (
+  const actionBtn = (
+    label: string,
+    icon: keyof typeof Ionicons.glyphMap,
+    onPress: () => void
+  ) => (
     <Pressable
       key={label}
       onPress={onPress}
@@ -144,7 +148,7 @@ export default function WalletScreen() {
         backgroundColor: t.panel,
       }}
     >
-      <Text style={{ fontSize: 17, color: t.orange }}>{glyph}</Text>
+      <Ionicons name={icon} size={17} color={t.orange} />
       <Text style={{ fontSize: 12.5, fontWeight: '600', color: t.bone }}>{label}</Text>
     </Pressable>
   );
@@ -322,9 +326,9 @@ export default function WalletScreen() {
             </View>
 
             <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 18, paddingTop: 16 }}>
-              {actionBtn('Receive', '↓', () => { setInvoice(null); setSheet('receive'); })}
-              {actionBtn('Send', '↑', () => setSheet('send'))}
-              {actionBtn('Backup', '⚿', () => setSheet('backup'))}
+              {actionBtn('Receive', 'arrow-down-outline', () => { setInvoice(null); setSheet('receive'); })}
+              {actionBtn('Send', 'arrow-up-outline', () => setSheet('send'))}
+              {actionBtn('Backup', 'key-outline', () => setSheet('backup'))}
             </View>
 
             <Text
@@ -361,15 +365,11 @@ export default function WalletScreen() {
                           backgroundColor: incoming ? t.greenSoft : t.surface,
                         }}
                       >
-                        <Text
-                          style={{
-                            fontSize: 15,
-                            fontWeight: '700',
-                            color: incoming ? t.green : t.dim,
-                          }}
-                        >
-                          {incoming ? '↓' : '↑'}
-                        </Text>
+                        <Ionicons
+                          name={incoming ? 'arrow-down' : 'arrow-up'}
+                          size={15}
+                          color={incoming ? t.green : t.dim}
+                        />
                       </View>
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <Text

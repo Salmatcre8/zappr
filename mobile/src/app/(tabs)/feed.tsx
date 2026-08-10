@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Text, View,
@@ -211,7 +212,7 @@ export default function FeedScreen() {
             justifyContent: 'center',
           }}
         >
-          <Text style={{ color: t.dim, fontSize: 14 }}>↻</Text>
+          <Ionicons name="refresh" size={15} color={t.dim} />
         </Pressable>
       </View>
 
