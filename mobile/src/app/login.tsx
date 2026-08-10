@@ -179,7 +179,7 @@ export default function LoginScreen() {
                       <Ionicons name="sparkles" size={16} color={t.onOrange} />
                     )}
                     <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
-                      {busy === 'fresh' ? 'Creating wallet…' : 'Create with FaceID / Fingerprint'}
+                      {busy === 'fresh' ? 'Creating wallet…' : 'Create with Passkey'}
                     </Text>
                   </Pressable>
                   <Text style={[mono, { color: t.faint, fontSize: 10.5, lineHeight: 16, marginTop: 8 }]}>
