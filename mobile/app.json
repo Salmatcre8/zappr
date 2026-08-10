@@ -8,12 +8,15 @@
     "scheme": "zappr",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "xyz.usezappr.app",
+      "associatedDomains": ["webcredentials:usezappr.xyz"],
       "icon": "./assets/expo.icon",
       "infoPlist": {
         "NSFaceIDUsageDescription": "zappr uses Face ID to unlock your keys and wallet."
       }
     },
     "android": {
+      "package": "xyz.usezappr.app",
       "adaptiveIcon": {
         "backgroundColor": "#F1EFE7",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

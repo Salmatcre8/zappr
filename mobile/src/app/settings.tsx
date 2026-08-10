@@ -196,6 +196,9 @@ export default function SettingsScreen() {
               {
                 borderTopLeftRadius: 0,
                 borderTopRightRadius: 0,
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0,
+                borderBottomWidth: 0,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -203,7 +206,23 @@ export default function SettingsScreen() {
             ]}
           >
             <Text style={{ color: t.bone, fontSize: 14.5 }}>Recovery phrase</Text>
-            <Text style={{ color: t.faint, fontSize: 14 }}>→</Text>
+            <Ionicons name="chevron-forward" size={14} color={t.faint} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/spike-passkey')}
+            style={[
+              rowCard,
+              {
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              },
+            ]}
+          >
+            <Text style={{ color: t.bone, fontSize: 14.5 }}>Passkey PRF spike (#6)</Text>
+            <Ionicons name="chevron-forward" size={14} color={t.faint} />
           </Pressable>
         </View>
 

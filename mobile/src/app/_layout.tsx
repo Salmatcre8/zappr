@@ -34,6 +34,7 @@ export default function RootLayout() {
           <Stack.Screen name="login" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="spike-passkey" />
         </Stack>
         <Toast />
       </View>
