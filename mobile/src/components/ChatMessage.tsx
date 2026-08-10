@@ -1,4 +1,5 @@
 import { Text, View } from 'react-native';
+import MarkdownText from './MarkdownText';
 import { mono, sans, useZapprTheme } from '@/lib/theme';
 import type { AgentContentBlock, AgentMessage } from '@/types/agent';
 
@@ -49,7 +50,10 @@ export default function ChatMessage({ message }: { message: AgentMessage }) {
             paddingVertical: 11,
           }}
         >
-          <Text style={[sans, { color: t.bone, fontSize: 14.5, lineHeight: 22 }]}>{text}</Text>
+          <MarkdownText
+            text={text}
+            style={[sans, { color: t.bone, fontSize: 14.5, lineHeight: 22 }]}
+          />
         </View>
       </View>
     );
@@ -68,7 +72,10 @@ export default function ChatMessage({ message }: { message: AgentMessage }) {
             paddingVertical: 11,
           }}
         >
-          <Text style={[sans, { color: t.bone, fontSize: 14.5, lineHeight: 22 }]}>{text}</Text>
+          <MarkdownText
+            text={text}
+            style={[sans, { color: t.bone, fontSize: 14.5, lineHeight: 22 }]}
+          />
         </View>
       ) : null}
       {tools.map((name) => (
