@@ -39,6 +39,21 @@ type BreezPayment = {
   status?: string;
 };
 
+/*
+  Boltz (the swap provider behind Lightning receive/send on Liquid) can
+  pause swap creation service-wide — as it did in Aug 2026 while fighting
+  automated attacks. Surface that honestly instead of a raw API error.
+*/
+function friendlySwapError(e: unknown): Error {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/swap creation is disabled/i.test(msg)) {
+    return new Error(
+      'Lightning swaps are temporarily paused by the swap provider (Boltz) — this affects all Liquid wallets right now. Try again later, or connect an NWC wallet.'
+    );
+  }
+  return e instanceof Error ? e : new Error(msg);
+}
+
 export class BreezAdapter implements WalletAdapter {
   readonly kind = 'breez' as const;
   constructor(private sdk: BreezSdk) {}
@@ -66,21 +81,29 @@ export class BreezAdapter implements WalletAdapter {
   }
 
   async payInvoice(bolt11: string): Promise<{ preimage?: string }> {
-    const prepared = await this.sdk.prepareSendPayment({ destination: bolt11 });
-    const res = await this.sdk.sendPayment({ prepareResponse: prepared });
-    return { preimage: res.payment?.preimage };
+    try {
+      const prepared = await this.sdk.prepareSendPayment({ destination: bolt11 });
+      const res = await this.sdk.sendPayment({ prepareResponse: prepared });
+      return { preimage: res.payment?.preimage };
+    } catch (e) {
+      throw friendlySwapError(e);
+    }
   }
 
   async makeInvoice(amountSats: number, memo?: string): Promise<string> {
-    const prepared = await this.sdk.prepareReceivePayment({
-      paymentMethod: 'bolt11Invoice',
-      amount: { type: 'bitcoin', payerAmountSat: amountSats },
-    });
-    const res = await this.sdk.receivePayment({
-      prepareResponse: prepared,
-      description: memo,
-    });
-    return res.destination;
+    try {
+      const prepared = await this.sdk.prepareReceivePayment({
+        paymentMethod: 'bolt11Invoice',
+        amount: { type: 'bitcoin', payerAmountSat: amountSats },
+      });
+      const res = await this.sdk.receivePayment({
+        prepareResponse: prepared,
+        description: memo,
+      });
+      return res.destination;
+    } catch (e) {
+      throw friendlySwapError(e);
+    }
   }
 
   async listTransactions(limit = 10): Promise<WalletTx[]> {
