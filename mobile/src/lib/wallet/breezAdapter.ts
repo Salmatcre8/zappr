@@ -1,50 +1,100 @@
 /*
-  Breez SDK Liquid on native — intentionally a stub for now.
+  Breez SDK Liquid wallet adapter — the NATIVE counterpart of web
+  src/lib/wallet/breezAdapter.ts. The 12-word mnemonic comes from the vault
+  (passkey-derived via PRF, or generated on-device) — same seedless model.
 
-  The real implementation uses @breeztech/react-native-breez-sdk-liquid (a
-  native module), which requires:
-    1. an EAS development build — it cannot load in Expo Go, and
-    2. a mnemonic source, which is decided by the #6 key-derivation spike
-       (passkey-PRF vs device-bound secure-enclave mnemonic).
+  Requires the dev build (native module — not Expo Go), and
+  EXPO_PUBLIC_BREEZ_API_KEY in mobile/.env (Breez ships the key client-side
+  by design; when running through Metro the env is inlined at serve time).
 
-  Keeping the class here (same WalletAdapter surface as web's breezAdapter)
-  lets screens and the agent executor compile against 'breez' today and swap
-  in the native SDK without touching call sites. See issues #6 and #7.
+  Docs: https://sdk-doc-liquid.breez.technology/
 */
+import {
+  connect,
+  defaultConfig,
+  disconnect as breezDisconnect,
+  getInfo,
+  listPayments,
+  LiquidNetwork,
+  PaymentMethod,
+  prepareReceivePayment,
+  prepareSendPayment,
+  receivePayment,
+  sendPayment,
+} from '@breeztech/react-native-breez-sdk-liquid';
 import type { WalletAdapter } from './adapter';
 import type { WalletTx } from '@/types/wallet';
 
-/*
-  Same convention as web's NEXT_PUBLIC_BREEZ_API_KEY: Breez ships this key
-  client-side by design (config, not a secret). Set it in mobile/.env —
-  see .env.example. The native SDK will read it when it lands.
-*/
 export const BREEZ_API_KEY = process.env.EXPO_PUBLIC_BREEZ_API_KEY ?? '';
 export const breezConfigured = BREEZ_API_KEY.length > 0;
 
-const NOT_READY =
-  'The self-custodial Breez wallet needs a development build and the #6 key spike — connect an NWC wallet for now.';
+// The RN SDK is a module-level singleton — one connection at a time.
+let connected = false;
 
 export class BreezAdapter implements WalletAdapter {
   readonly kind = 'breez' as const;
 
-  static async connect(_mnemonic: string): Promise<BreezAdapter> {
-    throw new Error(NOT_READY);
+  static async connect(mnemonic: string): Promise<BreezAdapter> {
+    if (!breezConfigured) {
+      throw new Error(
+        'EXPO_PUBLIC_BREEZ_API_KEY is not set — add it to mobile/.env and restart Metro'
+      );
+    }
+    if (connected) return new BreezAdapter();
+    const config = await defaultConfig(LiquidNetwork.MAINNET, BREEZ_API_KEY);
+    await connect({ config, mnemonic });
+    connected = true;
+    return new BreezAdapter();
   }
 
   async getBalance(): Promise<number> {
-    throw new Error(NOT_READY);
+    const info = await getInfo();
+    return info.walletInfo.balanceSat;
   }
 
-  async payInvoice(_bolt11: string): Promise<{ preimage?: string }> {
-    throw new Error(NOT_READY);
+  async payInvoice(bolt11: string): Promise<{ preimage?: string }> {
+    const prepareResponse = await prepareSendPayment({ destination: bolt11 });
+    const res = await sendPayment({ prepareResponse });
+    const details = res.payment?.details as { preimage?: string } | undefined;
+    return { preimage: details?.preimage };
   }
 
-  async makeInvoice(_amountSats: number, _memo?: string): Promise<string> {
-    throw new Error(NOT_READY);
+  async makeInvoice(amountSats: number, memo?: string): Promise<string> {
+    const prepareResponse = await prepareReceivePayment({
+      paymentMethod: PaymentMethod.LIGHTNING,
+      amount: { type: 'bitcoin', payerAmountSat: amountSats } as never,
+    });
+    const res = await receivePayment({
+      prepareResponse,
+      description: memo,
+    });
+    return res.destination;
   }
 
-  async listTransactions(_limit?: number): Promise<WalletTx[]> {
-    throw new Error(NOT_READY);
+  async listTransactions(limit = 10): Promise<WalletTx[]> {
+    try {
+      const list = await listPayments({ limit });
+      return list.map((p): WalletTx => {
+        const details = p.details as { description?: string } | undefined;
+        return {
+          type: p.paymentType === 'send' ? 'outgoing' : 'incoming',
+          amount: p.amountSat ?? 0,
+          fees_paid: p.feesSat,
+          created_at: p.timestamp ?? Math.floor(Date.now() / 1000),
+          description: details?.description,
+          payment_hash: p.txId,
+          settled_at: p.status === 'complete' ? p.timestamp : undefined,
+        };
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    try {
+      await breezDisconnect();
+    } catch {}
+    connected = false;
   }
 }

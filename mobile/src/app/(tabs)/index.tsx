@@ -13,6 +13,7 @@ import { timeAgo } from '@/lib/relative-time';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
 import { lnAddressToInvoice } from '@/lib/wallet/lightning';
 import { getSecret, hasSecret, saveSecret, VAULT_KEYS } from '@/lib/vault';
+import { useNostrStore } from '@/store/useNostrStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { toast } from '@/store/useToastStore';
 
@@ -25,10 +26,51 @@ export default function WalletScreen() {
     setAdapter, setBalance, setTxs, setConnecting, setError, reset,
   } = useWalletStore();
 
+  const pubkey = useNostrStore((s) => s.pubkey);
   const [nwcInput, setNwcInput] = useState('');
   const [hasSavedNwc, setHasSavedNwc] = useState(false);
+  const [hasBreez, setHasBreez] = useState(false);
+  const [showNwc, setShowNwc] = useState(false);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [mnemonicWords, setMnemonicWords] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    hasSecret(VAULT_KEYS.breezMnemonic).then(setHasBreez);
+  }, [adapter]);
+
+  /*
+    Self-custodial wallet — the newbie path, like web: nobody should need
+    to know what NWC is. Opens the vaulted mnemonic (passkey-derived, or
+    generated right here) into the Breez SDK. Needs the dev build.
+  */
+  const openZapprWallet = async (createNew: boolean) => {
+    setConnecting(true);
+    setError(null);
+    try {
+      let mnemonic: string | null;
+      if (createNew) {
+        const { generateMnemonic } = await import('@scure/bip39');
+        const { wordlist } = await import('@scure/bip39/wordlists/english.js');
+        mnemonic = generateMnemonic(wordlist, 128);
+        await saveSecret(VAULT_KEYS.breezMnemonic, mnemonic);
+      } else {
+        mnemonic = await getSecret(VAULT_KEYS.breezMnemonic, { gate: 'Open your zappr wallet' });
+        if (!mnemonic) throw new Error('Could not unlock the wallet mnemonic.');
+      }
+      const { BreezAdapter } = await import('@/lib/wallet/breezAdapter');
+      const a = await BreezAdapter.connect(mnemonic);
+      setAdapter(a);
+      await refresh(a);
+      if (createNew) toast('Wallet created — save your recovery phrase via Backup');
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : 'Could not open the wallet — this needs the zappr dev build.'
+      );
+    }
+    setConnecting(false);
+  };
 
   /*
     Backup sheet: passkey/Breez identities have a derived mnemonic in the
@@ -214,6 +256,7 @@ export default function WalletScreen() {
 
         {!adapter ? (
           <View style={{ paddingHorizontal: 18, paddingTop: 14, gap: 12 }}>
+            {/* Newbie path first — nobody should need to know what NWC is. */}
             <View
               style={{
                 borderRadius: 20,
@@ -224,75 +267,146 @@ export default function WalletScreen() {
                 gap: 10,
               }}
             >
-              <Text style={sectionLabel(t)}>Connect a wallet</Text>
+              <Text style={sectionLabel(t)}>Your zappr wallet</Text>
               <Text style={{ color: t.dim, fontSize: 13.5, lineHeight: 20 }}>
-                Not a custodial wallet. Paste a Nostr Wallet Connect string from Alby, Mutiny,
-                Primal — anything that speaks NWC.
+                Self-custodial Lightning wallet — the keys live on this phone, nowhere else.
               </Text>
-              <TextInput
-                value={nwcInput}
-                onChangeText={setNwcInput}
-                placeholder="nostr+walletconnect://…"
-                placeholderTextColor={t.faint}
-                autoCapitalize="none"
-                autoCorrect={false}
-                multiline
-                style={inputStyle}
-              />
-              {error ? <Text style={{ color: '#c93a2a', fontSize: 12.5 }}>{error}</Text> : null}
-              <Pressable
-                onPress={() => connect(nwcInput, true)}
-                disabled={connecting || !nwcInput.trim()}
-                style={{
-                  backgroundColor: t.orange,
-                  borderRadius: 12,
-                  paddingVertical: 14,
-                  alignItems: 'center',
-                  opacity: connecting || !nwcInput.trim() ? 0.5 : 1,
-                }}
-              >
-                {connecting ? (
-                  <ActivityIndicator color={t.onOrange} />
-                ) : (
-                  <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
-                    Connect via NWC
-                  </Text>
-                )}
-              </Pressable>
-              {hasSavedNwc ? (
+              {hasBreez ? (
                 <Pressable
-                  onPress={reconnectSaved}
+                  onPress={() => openZapprWallet(false)}
                   disabled={connecting}
                   style={{
-                    borderWidth: 1,
-                    borderColor: t.line,
+                    backgroundColor: t.orange,
                     borderRadius: 12,
-                    paddingVertical: 13,
+                    paddingVertical: 14,
+                    alignItems: 'center',
+                    opacity: connecting ? 0.6 : 1,
+                  }}
+                >
+                  {connecting ? (
+                    <ActivityIndicator color={t.onOrange} />
+                  ) : (
+                    <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
+                      Open your zappr wallet
+                    </Text>
+                  )}
+                </Pressable>
+              ) : pubkey ? (
+                <Pressable
+                  onPress={() => openZapprWallet(true)}
+                  disabled={connecting}
+                  style={{
+                    backgroundColor: t.orange,
+                    borderRadius: 12,
+                    paddingVertical: 14,
+                    alignItems: 'center',
+                    opacity: connecting ? 0.6 : 1,
+                  }}
+                >
+                  {connecting ? (
+                    <ActivityIndicator color={t.onOrange} />
+                  ) : (
+                    <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
+                      Create new wallet
+                    </Text>
+                  )}
+                </Pressable>
+              ) : (
+                <Pressable
+                  onPress={() => router.push('/login')}
+                  style={{
+                    backgroundColor: t.orange,
+                    borderRadius: 12,
+                    paddingVertical: 14,
                     alignItems: 'center',
                   }}
                 >
-                  <Text style={{ color: t.bone, fontWeight: '600', fontSize: 14 }}>
-                    Reconnect saved wallet
+                  <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
+                    Create with Passkey
                   </Text>
                 </Pressable>
-              ) : null}
-            </View>
-            <View
-              style={{
-                borderRadius: 16,
-                padding: 14,
-                backgroundColor: t.surface,
-                borderWidth: 1,
-                borderColor: t.line,
-                gap: 6,
-              }}
-            >
-              <Text style={sectionLabel(t)}>Start fresh (self-custodial)</Text>
-              <Text style={{ color: t.dim, fontSize: 12.5, lineHeight: 18 }}>
-                The seedless Breez wallet needs a development build and the #6 passkey spike —
-                it's on the way. NWC works today.
+              )}
+              <Text style={[mono, { color: t.faint, fontSize: 10.5, lineHeight: 16 }]}>
+                {hasBreez
+                  ? 'Your wallet keys are in the device vault — one tap opens them.'
+                  : pubkey
+                    ? 'One tap creates a wallet on this phone. Back up the phrase from the Backup button after.'
+                    : 'One tap on the login screen creates your identity and wallet together. No seed phrase.'}
               </Text>
+              {error ? <Text style={{ color: '#c93a2a', fontSize: 12.5 }}>{error}</Text> : null}
             </View>
+
+            {/* Power-user path, tucked away like web's "or use an existing identity". */}
+            <Pressable
+              onPress={() => setShowNwc((v) => !v)}
+              style={{ alignSelf: 'center', paddingVertical: 4 }}
+            >
+              <Text style={[mono, { color: t.faint, fontSize: 11 }]}>
+                {showNwc ? '− hide external wallet' : '+ connect an external wallet (NWC)'}
+              </Text>
+            </Pressable>
+            {showNwc ? (
+              <View
+                style={{
+                  borderRadius: 16,
+                  padding: 14,
+                  backgroundColor: t.surface,
+                  borderWidth: 1,
+                  borderColor: t.line,
+                  gap: 10,
+                }}
+              >
+                <Text style={{ color: t.dim, fontSize: 12.5, lineHeight: 18 }}>
+                  Already have Alby, Mutiny, or Primal? Paste a Nostr Wallet Connect string.
+                </Text>
+                <TextInput
+                  value={nwcInput}
+                  onChangeText={setNwcInput}
+                  placeholder="nostr+walletconnect://…"
+                  placeholderTextColor={t.faint}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  multiline
+                  style={inputStyle}
+                />
+                <Pressable
+                  onPress={() => connect(nwcInput, true)}
+                  disabled={connecting || !nwcInput.trim()}
+                  style={{
+                    backgroundColor: t.orange,
+                    borderRadius: 12,
+                    paddingVertical: 13,
+                    alignItems: 'center',
+                    opacity: connecting || !nwcInput.trim() ? 0.5 : 1,
+                  }}
+                >
+                  {connecting ? (
+                    <ActivityIndicator color={t.onOrange} />
+                  ) : (
+                    <Text style={[sansBold, { color: t.onOrange, fontSize: 14 }]}>
+                      Connect via NWC
+                    </Text>
+                  )}
+                </Pressable>
+                {hasSavedNwc ? (
+                  <Pressable
+                    onPress={reconnectSaved}
+                    disabled={connecting}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: t.line,
+                      borderRadius: 12,
+                      paddingVertical: 12,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={[sansSemiBold, { color: t.bone, fontSize: 13.5 }]}>
+                      Reconnect saved wallet
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         ) : (
           <>

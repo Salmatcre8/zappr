@@ -36,18 +36,38 @@ async function activate(nsec: string): Promise<void> {
   });
 }
 
-/** Background NWC reconnect — never blocks launch, failure is silent. */
+/*
+  Background wallet reconnect — never blocks launch, failure is silent.
+  Prefers the self-custodial Breez wallet (vaulted mnemonic) like web's
+  hydrateBreez; falls back to a saved NWC connection.
+*/
 function hydrateSavedWallet(): void {
-  getSecret(VAULT_KEYS.nwcUrl)
-    .then(async (url) => {
-      if (!url || useWalletStore.getState().adapter) return;
-      const adapter = await NwcAdapter.connect(url);
-      useWalletStore.getState().setAdapter(adapter, { connectionString: url });
+  (async () => {
+    if (useWalletStore.getState().adapter) return;
+    const mnemonic = await getSecret(VAULT_KEYS.breezMnemonic);
+    if (mnemonic) {
       try {
-        useWalletStore.getState().setBalance(await adapter.getBalance());
-      } catch {}
-    })
-    .catch(() => {});
+        const { BreezAdapter, breezConfigured } = await import('@/lib/wallet/breezAdapter');
+        if (breezConfigured) {
+          const adapter = await BreezAdapter.connect(mnemonic);
+          useWalletStore.getState().setAdapter(adapter);
+          try {
+            useWalletStore.getState().setBalance(await adapter.getBalance());
+          } catch {}
+          return;
+        }
+      } catch {
+        // Breez needs the dev build + API key; fall through to NWC.
+      }
+    }
+    const url = await getSecret(VAULT_KEYS.nwcUrl);
+    if (!url || useWalletStore.getState().adapter) return;
+    const adapter = await NwcAdapter.connect(url);
+    useWalletStore.getState().setAdapter(adapter, { connectionString: url });
+    try {
+      useWalletStore.getState().setBalance(await adapter.getBalance());
+    } catch {}
+  })().catch(() => {});
 }
 
 export async function loginWithNsec(nsec: string, nwc?: string): Promise<void> {

@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import NoteRow from '@/components/NoteRow';
 import ConfirmSheet from '@/components/ConfirmSheet';
+import FollowSheet from '@/components/FollowSheet';
 import { sansHeavy, useZapprTheme } from '@/lib/theme';
 import { initNDK } from '@/lib/nostr/ndk';
 import {
@@ -40,6 +41,7 @@ export default function FeedScreen() {
   const [zapTarget, setZapTarget] = useState<{ note: FeedNote; profile: NostrProfile } | null>(null);
   const [zapBusy, setZapBusy] = useState(false);
   const [zapped, setZapped] = useState<Record<string, boolean>>({});
+  const [followSheet, setFollowSheet] = useState(false);
   const endReachedGate = useRef(false);
 
   const ensureNdk = useCallback(async () => {
@@ -204,21 +206,40 @@ export default function FeedScreen() {
             Feed
           </Text>
         </View>
-        <Pressable
-          onPress={onRefresh}
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: t.line,
-            backgroundColor: t.surface,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Ionicons name="refresh" size={15} color={t.dim} />
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Pressable
+            onPress={() =>
+              pubkey ? setFollowSheet(true) : toast('Log in from the login screen to follow people')
+            }
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: t.line,
+              backgroundColor: t.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="person-add-outline" size={15} color={t.orange} />
+          </Pressable>
+          <Pressable
+            onPress={onRefresh}
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: t.line,
+              backgroundColor: t.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="refresh" size={15} color={t.dim} />
+          </Pressable>
+        </View>
       </View>
 
       {suggestions.length > 0 ? (
@@ -297,6 +318,8 @@ export default function FeedScreen() {
           }
         />
       )}
+
+      <FollowSheet visible={followSheet} onClose={() => setFollowSheet(false)} />
 
       <ConfirmSheet
         visible={!!zapTarget}
