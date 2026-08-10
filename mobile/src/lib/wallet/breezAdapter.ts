@@ -14,6 +14,14 @@
 import type { WalletAdapter } from './adapter';
 import type { WalletTx } from '@/types/wallet';
 
+/*
+  Same convention as web's NEXT_PUBLIC_BREEZ_API_KEY: Breez ships this key
+  client-side by design (config, not a secret). Set it in mobile/.env —
+  see .env.example. The native SDK will read it when it lands.
+*/
+export const BREEZ_API_KEY = process.env.EXPO_PUBLIC_BREEZ_API_KEY ?? '';
+export const breezConfigured = BREEZ_API_KEY.length > 0;
+
 const NOT_READY =
   'The self-custodial Breez wallet needs a development build and the #6 key spike — connect an NWC wallet for now.';
 
