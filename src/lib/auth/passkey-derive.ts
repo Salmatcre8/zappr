@@ -15,6 +15,7 @@ import { HDKey } from '@scure/bip32';
 import { entropyToMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { nip19, getPublicKey } from 'nostr-tools';
+import { rpId } from './rp';
 
 // "NYOASTRTSAOYN" — the Breez magic constant for Nostr account derivation.
 // Hex-encoded so it round-trips cleanly as a salt.
@@ -52,7 +53,7 @@ export async function createPasskey(displayName: string): Promise<{
   const created = (await navigator.credentials.create({
     publicKey: {
       challenge: challenge as any,
-      rp: { name: 'zappr', id: window.location.hostname },
+      rp: { name: 'zappr', id: rpId() },
       user: { id: userId as any, name: displayName, displayName },
       pubKeyCredParams: [
         { alg: -7, type: 'public-key' },
@@ -106,7 +107,8 @@ export async function discoverPasskey(): Promise<{
   const assertion = (await navigator.credentials.get({
     publicKey: {
       challenge: randomBytes(32) as any,
-      // Empty allowCredentials → user picks any passkey for this origin.
+      rpId: rpId(),
+      // Empty allowCredentials → user picks any passkey for this RP ID.
       allowCredentials: [],
       userVerification: 'required',
       timeout: 60_000,
@@ -136,6 +138,7 @@ export async function assertPasskey(credentialId: Uint8Array): Promise<{
   const assertion = (await navigator.credentials.get({
     publicKey: {
       challenge: randomBytes(32) as any,
+      rpId: rpId(),
       allowCredentials: [{ id: credentialId as any, type: 'public-key' }],
       userVerification: 'required',
       timeout: 60_000,

@@ -21,6 +21,7 @@ import {
   type DerivedVaultBlob,
 } from './vault';
 import { deriveAesKey, aesEncrypt, aesDecrypt, utf8Encode, utf8Decode } from './crypto';
+import { rpId } from './rp';
 
 type PrfPlaintext = {
   nsec: string;
@@ -68,7 +69,7 @@ export async function enrollVault(payload: PrfPlaintext): Promise<void> {
   const created = (await navigator.credentials.create({
     publicKey: {
       challenge: challenge as any,
-      rp: { name: 'zappr', id: window.location.hostname },
+      rp: { name: 'zappr', id: rpId() },
       user: {
         id: userId as any,
         name: 'zappr-vault',
@@ -96,6 +97,7 @@ export async function enrollVault(payload: PrfPlaintext): Promise<void> {
     const getResp = (await navigator.credentials.get({
       publicKey: {
         challenge: randomBytes(32) as any,
+        rpId: rpId(),
         allowCredentials: [{ id: created.rawId as any, type: 'public-key' }],
         userVerification: 'required',
         timeout: 60_000,
@@ -137,6 +139,7 @@ export async function unlockVault(): Promise<PrfPlaintext> {
   const assertion = (await navigator.credentials.get({
     publicKey: {
       challenge: randomBytes(32) as any,
+      rpId: rpId(),
       allowCredentials: [{ id: stored.credentialId as any, type: 'public-key' }],
       userVerification: 'required',
       timeout: 60_000,
