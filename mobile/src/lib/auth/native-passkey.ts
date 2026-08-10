@@ -38,7 +38,34 @@ function toBytes(v: unknown): Uint8Array | null {
   if (typeof v === 'string') return fromB64url(v);
   if (v instanceof Uint8Array) return v;
   if (v instanceof ArrayBuffer) return new Uint8Array(v);
+  if (Array.isArray(v)) return Uint8Array.from(v as number[]);
+  if (typeof v === 'object') {
+    // Some bridges serialize byte arrays as {"0":110,"1":42,...}
+    const vals = Object.values(v as Record<string, unknown>);
+    if (vals.length > 0 && vals.every((x) => typeof x === 'number')) {
+      return Uint8Array.from(vals as number[]);
+    }
+  }
   return null;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/*
+  Credential Manager ceremonies can hang indefinitely if a request gets
+  dropped (notably a get() fired right after a create()). Never leave the
+  UI spinning forever — fail with a retryable message instead.
+*/
+function ceremony<T>(p: Promise<T>, label: string, ms = 90_000): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`${label} timed out — close any stuck sheet and try again`)),
+        ms
+      )
+    ),
+  ]);
 }
 
 type PasskeysModule = {
@@ -93,20 +120,23 @@ export async function createPasskeyNative(displayName: string): Promise<PrfOutpu
   const m = mod();
   if (!m) throw new Error('Passkeys need the development build — not available in Expo Go');
 
-  const created = await m.create({
-    challenge: randomB64url(32),
-    rp: { id: RP_ID, name: 'zappr' },
-    user: { id: randomB64url(16), name: displayName, displayName },
-    pubKeyCredParams: [
-      { alg: -7, type: 'public-key' },
-      { alg: -257, type: 'public-key' },
-    ],
-    authenticatorSelection: {
-      userVerification: 'required',
-      residentKey: 'required',
-    },
-    extensions: PRF_EXT,
-  });
+  const created = await ceremony(
+    m.create({
+      challenge: randomB64url(32),
+      rp: { id: RP_ID, name: 'zappr' },
+      user: { id: randomB64url(16), name: displayName, displayName },
+      pubKeyCredParams: [
+        { alg: -7, type: 'public-key' },
+        { alg: -257, type: 'public-key' },
+      ],
+      authenticatorSelection: {
+        userVerification: 'required',
+        residentKey: 'required',
+      },
+      extensions: PRF_EXT,
+    }),
+    'Passkey creation'
+  );
   if (!created) throw new Error('Passkey creation cancelled');
 
   const rawId = (created as { rawId?: string; id?: string }).rawId ??
@@ -115,7 +145,11 @@ export async function createPasskeyNative(displayName: string): Promise<PrfOutpu
 
   let { first, second } = readPrf(created);
   // Some authenticators only evaluate PRF on get() — mirror web's fallback.
+  // Breathe before the follow-up prompt: Android's Credential Manager
+  // drops a get() fired immediately after a create(), which used to hang
+  // this flow forever.
   if (!first || !second) {
+    await sleep(600);
     const again = await assertPasskeyNative(rawId);
     first = again.nostrPrf;
     second = again.liquidPrf;
@@ -131,13 +165,16 @@ export async function assertPasskeyNative(credentialId: string): Promise<PrfOutp
   const m = mod();
   if (!m) throw new Error('Passkeys need the development build — not available in Expo Go');
 
-  const assertion = await m.get({
-    challenge: randomB64url(32),
-    rpId: RP_ID,
-    allowCredentials: [{ id: credentialId, type: 'public-key' }],
-    userVerification: 'required',
-    extensions: PRF_EXT,
-  });
+  const assertion = await ceremony(
+    m.get({
+      challenge: randomB64url(32),
+      rpId: RP_ID,
+      allowCredentials: [{ id: credentialId, type: 'public-key' }],
+      userVerification: 'required',
+      extensions: PRF_EXT,
+    }),
+    'Biometric assertion'
+  );
   if (!assertion) throw new Error('Biometric assertion cancelled');
 
   const { first, second } = readPrf(assertion);
@@ -158,13 +195,16 @@ export async function discoverPasskeyNative(): Promise<PrfOutputs> {
   const m = mod();
   if (!m) throw new Error('Passkeys need the development build — not available in Expo Go');
 
-  const assertion = await m.get({
-    challenge: randomB64url(32),
-    rpId: RP_ID,
-    allowCredentials: [],
-    userVerification: 'required',
-    extensions: PRF_EXT,
-  });
+  const assertion = await ceremony(
+    m.get({
+      challenge: randomB64url(32),
+      rpId: RP_ID,
+      allowCredentials: [],
+      userVerification: 'required',
+      extensions: PRF_EXT,
+    }),
+    'Passkey selection'
+  );
   if (!assertion) throw new Error('Biometric cancelled');
 
   const { first, second } = readPrf(assertion);
