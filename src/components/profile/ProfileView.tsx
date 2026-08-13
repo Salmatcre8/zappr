@@ -9,7 +9,7 @@
 import { useEffect, useState } from 'react';
 import { Loader2, User, UserPen, X } from 'lucide-react';
 import type { FeedNote } from '@/types/nostr';
-import { fetchEngagedNotes, fetchFeed, fetchProfile } from '@/lib/nostr/events';
+import { fetchEngagedNotes, fetchFeed, fetchProfiles } from '@/lib/nostr/events';
 import { truncateNpub } from '@/lib/nostr/keys';
 import { useNostrStore } from '@/store/useNostrStore';
 import NoteCard from '@/components/feed/NoteCard';
@@ -51,13 +51,16 @@ export default function ProfileView({
             : await fetchEngagedNotes(ndk, pubkey, tab === 'likes' ? 7 : 6, 30);
         if (cancelled) return;
         setNotes((n) => ({ ...n, [tab]: found }));
-        Array.from(new Set(found.map((n) => n.pubkey)))
-          .slice(0, 20)
-          .forEach(async (p) => {
-            if (profiles[p]) return;
-            const prof = await fetchProfile(ndk, p);
-            if (prof && !cancelled) upsertProfile(prof);
-          });
+        const missing = Array.from(new Set(found.map((n) => n.pubkey))).filter(
+          (p) => !profiles[p]
+        );
+        if (missing.length) {
+          fetchProfiles(ndk, missing)
+            .then((profs) => {
+              if (!cancelled) Object.values(profs).forEach(upsertProfile);
+            })
+            .catch(() => {});
+        }
       } catch {
         if (!cancelled) setNotes((n) => ({ ...n, [tab]: n[tab] ?? [] }));
       } finally {

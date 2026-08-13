@@ -2,7 +2,9 @@ import NDK, { NDKPrivateKeySigner, NDKNip07Signer } from '@nostr-dev-kit/ndk';
 
 export const DEFAULT_RELAYS = (
   process.env.NEXT_PUBLIC_DEFAULT_RELAYS ||
-  'wss://relay.damus.io,wss://relay.nostr.band,wss://nos.lol,wss://relay.primal.net,wss://relay.yakihonne.com'
+  // relay.nostr.band + relay.yakihonne.com went dark Aug 2026 — replaced
+  // with long-lived free relays so reads don't burn timeout budget.
+  'wss://relay.damus.io,wss://nos.lol,wss://relay.primal.net,wss://offchain.pub,wss://nostr.oxtr.dev'
 ).split(',').map((r) => r.trim()).filter(Boolean);
 
 let ndkInstance: NDK | null = null;

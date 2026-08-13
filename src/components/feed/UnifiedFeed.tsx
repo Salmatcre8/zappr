@@ -6,7 +6,7 @@ import {
   fetchEngagement,
   fetchFeed,
   fetchFollowList,
-  fetchProfile,
+  fetchProfiles,
   type NoteEngagement,
 } from '@/lib/nostr/events';
 import { loadFollows, saveFollows } from '@/lib/nostr/follow-cache';
@@ -78,12 +78,16 @@ export default function UnifiedFeed() {
           .then(setEngagement)
           .catch(() => {});
       }
-      const uniqueAuthors = Array.from(new Set(notes.map((n) => n.pubkey)));
-      uniqueAuthors.slice(0, 30).forEach(async (p) => {
-        if (profiles[p]) return;
-        const prof = await fetchProfile(ndk, p);
-        if (prof) upsertProfile(prof);
-      });
+      // One batched kind:0 subscription — per-author lookups time out en
+      // masse on flaky connections and everyone renders as "anon".
+      const missing = Array.from(new Set(notes.map((n) => n.pubkey))).filter(
+        (p) => !profiles[p]
+      );
+      if (missing.length) {
+        fetchProfiles(ndk, missing)
+          .then((found) => Object.values(found).forEach(upsertProfile))
+          .catch(() => {});
+      }
     } finally {
       setLoadingFeed(false);
     }
