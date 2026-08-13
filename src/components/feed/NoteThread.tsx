@@ -9,9 +9,17 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { formatDistanceToNowStrict } from 'date-fns';
-import { Heart, Loader2, MessageCircle, Send, X } from 'lucide-react';
+import { Heart, Loader2, MessageCircle, Repeat2, Send, X } from 'lucide-react';
 import type { FeedNote } from '@/types/nostr';
-import { fetchProfile, fetchReplies, publishReaction, publishReply } from '@/lib/nostr/events';
+import {
+  fetchMyEngagement,
+  fetchProfile,
+  fetchReplies,
+  publishReaction,
+  publishReply,
+  publishRepost,
+} from '@/lib/nostr/events';
+import { addMark, loadMarks } from '@/lib/nostr/engage-cache';
 import { splitMedia } from '@/lib/nostr/note-media';
 import { useNostrStore } from '@/store/useNostrStore';
 import { truncateNpub, hexToNpub } from '@/lib/nostr/keys';
@@ -72,7 +80,30 @@ export default function NoteThread({
   const [sending, setSending] = useState(false);
   const [liked, setLiked] = useState(false);
   const [liking, setLiking] = useState(false);
+  const [reposted, setReposted] = useState(false);
+  const [reposting, setReposting] = useState(false);
   const listEndRef = useRef<HTMLDivElement>(null);
+
+  // Like/Repost state must survive closing the thread: local cache answers
+  // instantly, then the relays confirm (covers likes from other devices).
+  useEffect(() => {
+    let cancelled = false;
+    if (loadMarks('liked').has(note.id)) setLiked(true);
+    if (loadMarks('reposted').has(note.id)) setReposted(true);
+    if (ndk && pubkey) {
+      fetchMyEngagement(ndk, pubkey, note.id)
+        .then((mine) => {
+          if (cancelled) return;
+          if (mine.liked) setLiked(true);
+          if (mine.reposted) setReposted(true);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ndk, pubkey, note.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,10 +167,25 @@ export default function NoteThread({
     try {
       await publishReaction(ndk, note);
       setLiked(true);
+      addMark('liked', note.id);
     } catch {
       setError('Reaction failed to publish — try again.');
     } finally {
       setLiking(false);
+    }
+  };
+
+  const repost = async () => {
+    if (!ndk || !pubkey || reposted || reposting) return;
+    setReposting(true);
+    try {
+      await publishRepost(ndk, note);
+      setReposted(true);
+      addMark('reposted', note.id);
+    } catch {
+      setError('Repost failed to publish — try again.');
+    } finally {
+      setReposting(false);
     }
   };
 
@@ -183,6 +229,22 @@ export default function NoteThread({
                 <Heart className={`w-3 h-3 ${liked ? 'fill-current' : ''}`} />
               )}
               {liked ? 'Liked' : 'Like'}
+            </button>
+            <button
+              onClick={repost}
+              disabled={!pubkey || reposted || reposting}
+              className={`flex items-center gap-1 border border-line rounded-xl px-2 py-1 font-mono text-[11px] transition ${
+                reposted
+                  ? 'bg-orange text-ink'
+                  : 'bg-panel hover:bg-orange hover:text-ink disabled:opacity-50'
+              }`}
+            >
+              {reposting ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Repeat2 className="w-3 h-3" />
+              )}
+              {reposted ? 'Reposted' : 'Repost'}
             </button>
             <span className="font-mono text-[10px] text-bone/40">
               {replies.length > 0
