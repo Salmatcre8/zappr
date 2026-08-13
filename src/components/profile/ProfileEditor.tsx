@@ -12,6 +12,7 @@
 import { useState } from 'react';
 import { Loader2, UserPen, Zap } from 'lucide-react';
 import { publishProfile } from '@/lib/nostr/events';
+import { saveOwnProfile } from '@/lib/nostr/profile-cache';
 import { useNostrStore } from '@/store/useNostrStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import type { SparkAdapter } from '@/lib/wallet/sparkAdapter';
@@ -74,6 +75,7 @@ export default function ProfileEditor({ onDone }: { onDone: () => void }) {
       });
       setIdentity(pubkey, npub, updated);
       upsertProfile(updated);
+      saveOwnProfile(updated);
       onDone();
     } catch {
       setError('Publish failed — relays may be slow, try again.');
