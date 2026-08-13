@@ -19,7 +19,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Image } from 'expo-image';
+
 import Avatar from '@/components/Avatar';
+import { splitMedia } from '@/lib/note-media';
 import { mono, sans, sansBold, sansHeavy, sansSemiBold, useZapprTheme } from '@/lib/theme';
 import { timeAgo } from '@/lib/relative-time';
 import { initNDK } from '@/lib/nostr/ndk';
@@ -163,9 +166,35 @@ export default function NoteThreadScreen() {
             </Text>
             <Text style={{ color: t.faint, fontSize: 12 }}>· {timeAgo(note.createdAt)}</Text>
           </View>
-          <Text style={[sans, { color: t.bone, fontSize: 15.5, lineHeight: 24, marginTop: 6 }]}>
-            {note.content}
-          </Text>
+          {(() => {
+            const { text, images } = splitMedia(note.content);
+            return (
+              <>
+                {text ? (
+                  <Text
+                    style={[sans, { color: t.bone, fontSize: 15.5, lineHeight: 24, marginTop: 6 }]}
+                  >
+                    {text}
+                  </Text>
+                ) : null}
+                {images.map((uri) => (
+                  <Image
+                    key={uri}
+                    source={{ uri }}
+                    style={{
+                      width: '100%',
+                      height: 220,
+                      borderRadius: 12,
+                      marginTop: 8,
+                      backgroundColor: t.surface,
+                    }}
+                    contentFit="cover"
+                    transition={150}
+                  />
+                ))}
+              </>
+            );
+          })()}
         </View>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 14 }}>

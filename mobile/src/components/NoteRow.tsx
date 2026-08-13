@@ -1,7 +1,9 @@
 import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import Avatar from './Avatar';
+import { splitMedia } from '@/lib/note-media';
 import { mono, sans, sansSemiBold, useZapprTheme } from '@/lib/theme';
 import { timeAgo } from '@/lib/relative-time';
 import { truncateNpub } from '@/lib/nostr/keys';
@@ -91,9 +93,35 @@ function NoteRow({
             </Text>
             <Text style={{ color: t.faint, fontSize: 12 }}>· {timeAgo(note.createdAt)}</Text>
           </View>
-          <Text style={[sans, { color: t.text2, fontSize: 14.5, lineHeight: 22, marginTop: 5 }]}>
-            {note.content}
-          </Text>
+          {(() => {
+            const { text, images } = splitMedia(note.content);
+            return (
+              <>
+                {text ? (
+                  <Text
+                    style={[sans, { color: t.text2, fontSize: 14.5, lineHeight: 22, marginTop: 5 }]}
+                  >
+                    {text}
+                  </Text>
+                ) : null}
+                {images.map((uri) => (
+                  <Image
+                    key={uri}
+                    source={{ uri }}
+                    style={{
+                      width: '100%',
+                      height: 200,
+                      borderRadius: 12,
+                      marginTop: 8,
+                      backgroundColor: t.surface,
+                    }}
+                    contentFit="cover"
+                    transition={150}
+                  />
+                ))}
+              </>
+            );
+          })()}
           {hashtags.length > 0 ? (
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
               {hashtags.map((h) => (
