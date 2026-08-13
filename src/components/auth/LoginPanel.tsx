@@ -6,7 +6,7 @@ import { Key, Wallet, Shield, Loader2, Puzzle, Fingerprint, Sparkles } from 'luc
 import { initNDK } from '@/lib/nostr/ndk';
 import { derivePubkeyFromNsec } from '@/lib/nostr/keys';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
-import { BreezAdapter } from '@/lib/wallet/breezAdapter';
+import { SparkAdapter } from '@/lib/wallet/sparkAdapter';
 import { useNostrStore } from '@/store/useNostrStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { saveSession } from '@/lib/auth/session';
@@ -60,7 +60,7 @@ export default function LoginPanel() {
   }
 
   async function hydrateBreez(mnemonic: string) {
-    const adapter = await BreezAdapter.connect(mnemonic);
+    const adapter = await SparkAdapter.connect(mnemonic);
     useWalletStore.getState().setAdapter(adapter);
     try {
       useWalletStore.getState().setBalance(await adapter.getBalance());
