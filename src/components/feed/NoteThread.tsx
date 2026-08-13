@@ -13,7 +13,7 @@ import { Heart, Loader2, MessageCircle, Repeat2, Send, X } from 'lucide-react';
 import type { FeedNote } from '@/types/nostr';
 import {
   fetchMyEngagement,
-  fetchProfile,
+  fetchProfiles,
   fetchReplies,
   publishReaction,
   publishReply,
@@ -115,14 +115,17 @@ export default function NoteThread({
         const found = await fetchReplies(ndk, note.id);
         if (cancelled) return;
         setReplies(found);
-        // Profiles are cosmetic — hydrate the first screenful in the background.
-        Array.from(new Set(found.map((r) => r.pubkey)))
-          .slice(0, 15)
-          .forEach(async (p) => {
-            if (profiles[p]) return;
-            const prof = await fetchProfile(ndk, p);
-            if (prof && !cancelled) upsertProfile(prof);
-          });
+        // Profiles are cosmetic — one batched kind:0 fetch in the background.
+        const missing = Array.from(new Set(found.map((r) => r.pubkey))).filter(
+          (p) => !profiles[p]
+        );
+        if (missing.length) {
+          fetchProfiles(ndk, missing)
+            .then((profs) => {
+              if (!cancelled) Object.values(profs).forEach(upsertProfile);
+            })
+            .catch(() => {});
+        }
       } catch {
         if (!cancelled) setError('Could not load replies — relays can be slow. Try again.');
       } finally {

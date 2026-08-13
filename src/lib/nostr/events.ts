@@ -1,6 +1,18 @@
-import NDK, { NDKEvent, NDKFilter, NDKKind, NDKUser } from '@nostr-dev-kit/ndk';
+import NDK, { NDKEvent, NDKFilter, NDKKind, NDKRelaySet, NDKUser } from '@nostr-dev-kit/ndk';
 import type { FeedNote, NostrProfile } from '@/types/nostr';
 import { hexToNpub } from './keys';
+import { DEFAULT_RELAYS } from './ndk';
+
+/*
+  Publish to OUR relay set explicitly. Without this, NDK also targets the
+  signed-in user's advertised personal relays (NIP-65) — connections the
+  app never opened — so publishes (including kind:0 profiles!) can sit
+  "waiting for connection" and never land on the relays we read from.
+  The mobile app shipped this pin first.
+*/
+function appRelays(ndk: NDK): NDKRelaySet {
+  return NDKRelaySet.fromRelayUrls(DEFAULT_RELAYS, ndk);
+}
 
 /*
   Every relay read goes through fetchEventsWithTimeout instead of
@@ -88,6 +100,45 @@ export async function fetchFeed(
   return notes;
 }
 
+/*
+  Batched profile fetch: one kind:0 subscription for all authors instead of
+  N× NDKUser.fetchProfile round-trips. On a phone browser racing flaky
+  relays, per-author lookups time out en masse and the whole feed shows
+  "anon" — one subscription either lands or doesn't.
+*/
+export async function fetchProfiles(
+  ndk: NDK,
+  pubkeys: string[]
+): Promise<Record<string, NostrProfile>> {
+  const out: Record<string, NostrProfile> = {};
+  if (pubkeys.length === 0) return out;
+  const filter: NDKFilter = { kinds: [0 as NDKKind], authors: Array.from(new Set(pubkeys)) };
+  const events = await fetchEventsWithTimeout(ndk, filter);
+  const latest: Record<string, NDKEvent> = {};
+  for (const ev of events) {
+    const prev = latest[ev.pubkey];
+    if (!prev || (ev.created_at || 0) > (prev.created_at || 0)) latest[ev.pubkey] = ev;
+  }
+  for (const [pubkey, ev] of Object.entries(latest)) {
+    try {
+      const meta = JSON.parse(ev.content) as Record<string, string | undefined>;
+      out[pubkey] = {
+        npub: hexToNpub(pubkey),
+        pubkey,
+        name: meta.name,
+        displayName: meta.display_name || meta.displayName,
+        picture: meta.picture,
+        nip05: meta.nip05,
+        lud16: meta.lud16,
+        about: meta.about,
+      };
+    } catch {
+      out[pubkey] = { npub: hexToNpub(pubkey), pubkey };
+    }
+  }
+  return out;
+}
+
 export async function fetchProfile(ndk: NDK, pubkey: string): Promise<NostrProfile | null> {
   try {
     const user = new NDKUser({ pubkey });
@@ -113,7 +164,7 @@ export async function publishNote(ndk: NDK, content: string): Promise<string> {
   const ev = new NDKEvent(ndk);
   ev.kind = 1;
   ev.content = content;
-  await ev.publish();
+  await ev.publish(appRelays(ndk));
   return ev.id;
 }
 
@@ -268,7 +319,7 @@ export async function publishReply(
   const ps = new Set<string>([parent.pubkey]);
   for (const t of parent.tags) if (t[0] === 'p' && t[1]?.length === 64) ps.add(t[1]);
   for (const p of ps) ev.tags.push(['p', p]);
-  await ev.publish();
+  await ev.publish(appRelays(ndk));
   return ev.id;
 }
 
@@ -280,7 +331,7 @@ export async function publishReaction(ndk: NDK, note: FeedNote): Promise<string>
     ['e', note.id],
     ['p', note.pubkey],
   ];
-  await ev.publish();
+  await ev.publish(appRelays(ndk));
   return ev.id;
 }
 
@@ -316,7 +367,7 @@ export async function publishRepost(ndk: NDK, note: FeedNote): Promise<string> {
     ['e', note.id],
     ['p', note.pubkey],
   ];
-  await ev.publish();
+  await ev.publish(appRelays(ndk));
   return ev.id;
 }
 
@@ -355,7 +406,7 @@ export async function publishProfile(
   const ev = new NDKEvent(ndk);
   ev.kind = 0;
   ev.content = JSON.stringify(merged);
-  await ev.publish();
+  await ev.publish(appRelays(ndk));
   return {
     npub: hexToNpub(pubkey),
     pubkey,
@@ -376,6 +427,6 @@ export async function publishContacts(
   ev.kind = 3;
   ev.tags = pubkeys.map((p) => ['p', p]);
   ev.content = '';
-  await ev.publish();
+  await ev.publish(appRelays(ndk));
   return { id: ev.id, createdAt: ev.created_at || Math.floor(Date.now() / 1000) };
 }
