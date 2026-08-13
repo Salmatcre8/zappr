@@ -49,7 +49,7 @@ export default function WalletPanel() {
           {balance !== null ? balance.toLocaleString() : '—'}
         </div>
         <div className="font-mono text-[10px] text-bone/50 mt-0.5">
-          sats {adapter ? `· ${adapter.kind === 'breez' ? 'Liquid · self-custodial' : 'NWC'}` : ''}
+          sats {adapter ? `· ${adapter.kind === 'nwc' ? 'NWC' : adapter.kind === 'spark' ? 'Spark · self-custodial' : 'Liquid · self-custodial'}` : ''}
         </div>
       </div>
 

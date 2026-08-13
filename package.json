@@ -11,6 +11,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@breeztech/breez-sdk-liquid": "^0.12.4",
+    "@breeztech/breez-sdk-spark": "^0.22.0",
     "@getalby/sdk": "^3.7.1",
     "@nostr-dev-kit/ndk": "^2.10.7",
     "@scure/bip32": "^2.2.0",

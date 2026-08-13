@@ -8,7 +8,7 @@ import { useWalletStore } from '@/store/useWalletStore';
 import { initNDK } from '@/lib/nostr/ndk';
 import { derivePubkeyFromNsec } from '@/lib/nostr/keys';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
-import { BreezAdapter } from '@/lib/wallet/breezAdapter';
+import { SparkAdapter } from '@/lib/wallet/sparkAdapter';
 import { loadSession, clearSession } from '@/lib/auth/session';
 import { vaultGet } from '@/lib/auth/vault';
 import { unlockVault } from '@/lib/auth/webauthn';
@@ -54,11 +54,11 @@ export default function DashboardPage() {
           setNdk(ndkInst);
           setIdentity(hex, npub);
           try {
-            const adapter = await BreezAdapter.connect(mnemonic);
+            const adapter = await SparkAdapter.connect(mnemonic);
             useWalletStore.getState().setAdapter(adapter);
             useWalletStore.getState().setBalance(await adapter.getBalance());
           } catch (e) {
-            console.warn('Breez hydrate failed', e);
+            console.warn('Spark hydrate failed', e);
           }
           if (!cancelled) setHydrating(false);
           return;

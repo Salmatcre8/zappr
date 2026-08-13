@@ -24,7 +24,7 @@ export default function TopBar() {
     if (blob?.kind !== 'derived') {
       await vaultClear();
     }
-    if (adapter?.kind === 'breez') {
+    if (adapter?.kind === 'breez' || adapter?.kind === 'spark') {
       try {
         await adapter.disconnect?.();
       } catch {}
@@ -46,7 +46,7 @@ export default function TopBar() {
         <div className="hidden sm:flex items-center gap-1.5">
           <Radio className={`w-3.5 h-3.5 ${adapter ? 'text-orange' : 'text-bone/30'}`} />
           <span className="text-bone/60">
-            {adapter ? (adapter.kind === 'breez' ? 'WALLET LIVE' : 'NWC LIVE') : 'WALLET OFF'}
+            {adapter ? (adapter.kind === 'nwc' ? 'NWC LIVE' : 'WALLET LIVE') : 'WALLET OFF'}
           </span>
         </div>
         <span className="hidden md:inline text-bone/70">{npub ? truncateNpub(npub) : ''}</span>

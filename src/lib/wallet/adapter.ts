@@ -7,7 +7,7 @@
 
 import type { WalletTx } from '@/types/wallet';
 
-export type WalletKind = 'nwc' | 'breez';
+export type WalletKind = 'nwc' | 'breez' | 'spark';
 
 export interface WalletAdapter {
   kind: WalletKind;
