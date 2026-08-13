@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Text, View,
@@ -11,11 +12,13 @@ import FollowSheet from '@/components/FollowSheet';
 import { sansHeavy, useZapprTheme } from '@/lib/theme';
 import { initNDK } from '@/lib/nostr/ndk';
 import {
+  fetchEngagement,
   fetchFeed,
   fetchFollowList,
   fetchGlobalFeed,
   fetchProfiles,
   publishContacts,
+  type NoteEngagement,
 } from '@/lib/nostr/events';
 import { loadFollows, saveFollows } from '@/lib/nostr/follow-cache';
 import { truncateNpub } from '@/lib/nostr/keys';
@@ -42,6 +45,7 @@ export default function FeedScreen() {
   const [zapBusy, setZapBusy] = useState(false);
   const [zapped, setZapped] = useState<Record<string, boolean>>({});
   const [followSheet, setFollowSheet] = useState(false);
+  const [engagement, setEngagement] = useState<Record<string, NoteEngagement>>({});
   const endReachedGate = useRef(false);
 
   const ensureNdk = useCallback(async () => {
@@ -72,6 +76,15 @@ export default function FeedScreen() {
           : await fetchGlobalFeed(instance, 50, until);
       const merged = mode === 'reset' ? notes : dedupe([...feed, ...notes]);
       setFeed(merged);
+      // Engagement (issue #13): one batched #e subscription per load,
+      // fire-and-forget so the notes render immediately.
+      if (notes.length) {
+        fetchEngagement(instance, notes.map((n) => n.id))
+          .then((found) =>
+            setEngagement((prev) => (mode === 'reset' ? found : { ...prev, ...found }))
+          )
+          .catch(() => {});
+      }
       await hydrateProfiles(instance, notes);
     },
     [ensureNdk, feed, follows, pubkey, setFeed, hydrateProfiles]
@@ -159,6 +172,11 @@ export default function FeedScreen() {
 
   const onZapPress = useCallback(
     (note: FeedNote, profile: NostrProfile) => setZapTarget({ note, profile }),
+    []
+  );
+
+  const openThread = useCallback(
+    (note: FeedNote) => router.push({ pathname: '/note/[id]', params: { id: note.id } }),
     []
   );
 
@@ -291,9 +309,11 @@ export default function FeedScreen() {
             <NoteRow
               note={item}
               profile={profiles[item.pubkey]}
+              engagement={engagement[item.id]}
               zapped={!!zapped[item.id]}
               zapAmount={DEFAULT_ZAP_SATS}
               onZap={walletAdapter ? onZapPress : undefined}
+              onOpen={openThread}
             />
           )}
           initialNumToRender={10}
