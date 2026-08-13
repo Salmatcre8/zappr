@@ -10,18 +10,56 @@
 */
 
 import { useState } from 'react';
-import { Loader2, UserPen } from 'lucide-react';
+import { Loader2, UserPen, Zap } from 'lucide-react';
 import { publishProfile } from '@/lib/nostr/events';
 import { useNostrStore } from '@/store/useNostrStore';
+import { useWalletStore } from '@/store/useWalletStore';
+import type { SparkAdapter } from '@/lib/wallet/sparkAdapter';
 
 export default function ProfileEditor({ onDone }: { onDone: () => void }) {
   const { ndk, pubkey, npub, profile, setIdentity, upsertProfile } = useNostrStore();
+  const walletAdapter = useWalletStore((s) => s.adapter);
   const [name, setName] = useState(profile?.displayName || profile?.name || '');
   const [about, setAbout] = useState(profile?.about || '');
   const [picture, setPicture] = useState(profile?.picture || '');
   const [lud16, setLud16] = useState(profile?.lud16 || '');
   const [saving, setSaving] = useState(false);
+  const [linking, setLinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /*
+    The built-in Spark wallet can BE the zap target: the SDK registers a
+    Lightning address (user@breez.tips) whose payments land directly in the
+    Spark balance. One click fills it in as lud16.
+  */
+  const useZapprWallet = async () => {
+    if (!walletAdapter || walletAdapter.kind !== 'spark' || linking) return;
+    const spark = walletAdapter as SparkAdapter;
+    setLinking(true);
+    setError(null);
+    try {
+      let addr = await spark.lightningAddress();
+      if (!addr) {
+        const base =
+          (name || npub?.slice(5, 13) || 'zappr')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '')
+            .slice(0, 20) || 'zappr';
+        try {
+          addr = await spark.registerLightningAddress(base);
+        } catch {
+          addr = await spark.registerLightningAddress(
+            `${base}${Math.floor(Math.random() * 900 + 100)}`
+          );
+        }
+      }
+      setLud16(addr);
+    } catch {
+      setError('Could not register a wallet address — try again.');
+    } finally {
+      setLinking(false);
+    }
+  };
 
   const save = async () => {
     if (!ndk || !pubkey || !npub || saving) return;
@@ -90,8 +128,24 @@ export default function ProfileEditor({ onDone }: { onDone: () => void }) {
           placeholder="you@wallet.com"
           className={inputCls}
         />
+        {walletAdapter?.kind === 'spark' ? (
+          <button
+            onClick={useZapprWallet}
+            disabled={linking}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 border border-line rounded-xl bg-panel px-3 py-2 font-mono text-[11px] hover:bg-orange hover:text-ink transition disabled:opacity-60"
+          >
+            {linking ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Zap className="w-3 h-3 text-orange" />
+            )}
+            Use my zappr wallet
+          </button>
+        ) : null}
         <p className="font-mono text-[10px] text-bone/40 mt-1">
-          Where zaps on your notes get paid. Without it nobody can zap you.
+          {walletAdapter?.kind === 'spark'
+            ? 'Zaps go to this address. The button above registers one that pays straight into your zappr wallet.'
+            : 'Where zaps on your notes get paid. Without it nobody can zap you.'}
         </p>
       </div>
       <div className="flex items-center gap-2">

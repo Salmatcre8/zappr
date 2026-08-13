@@ -7,6 +7,7 @@ import ReceiveInvoiceCard from '@/components/wallet/ReceiveInvoiceCard';
 import SendCard from '@/components/wallet/SendCard';
 import BackupPhraseCard from '@/components/wallet/BackupPhraseCard';
 import ProfileEditor from '@/components/profile/ProfileEditor';
+import ProfileView from '@/components/profile/ProfileView';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useNostrStore } from '@/store/useNostrStore';
 import { fetchProfile } from '@/lib/nostr/events';
@@ -18,6 +19,7 @@ export default function Sidebar() {
   const { ndk, pubkey, npub, profile, setIdentity } = useNostrStore();
   const [copied, setCopied] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [viewing, setViewing] = useState(false);
 
   // The login/hydration paths set identity without metadata — pull the
   // user's own kind:0 so the card (and the editor prefill) show it.
@@ -52,27 +54,33 @@ export default function Sidebar() {
     <div className="space-y-4">
       <div className="brut-panel p-4">
         <div className="flex items-center gap-3">
-          {profile?.picture ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.picture}
-              alt=""
-              className="w-12 h-12 border border-line rounded-xl object-cover shrink-0"
-            />
-          ) : (
-            <div className="w-12 h-12 bg-orange flex items-center justify-center border border-line rounded-xl shrink-0">
-              <User className="w-6 h-6 text-ink" strokeWidth={2.5} />
+          <button
+            onClick={() => npub && setViewing(true)}
+            aria-label="Open profile"
+            className="flex items-center gap-3 min-w-0 flex-1 text-left"
+          >
+            {profile?.picture ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profile.picture}
+                alt=""
+                className="w-12 h-12 border border-line rounded-xl object-cover shrink-0"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-orange flex items-center justify-center border border-line rounded-xl shrink-0">
+                <User className="w-6 h-6 text-ink" strokeWidth={2.5} />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-bone/50">Identity</div>
+              {displayName ? (
+                <div className="font-mono text-sm font-bold truncate">{displayName}</div>
+              ) : null}
+              <div className={`font-mono ${displayName ? 'text-[10px] text-bone/40' : 'text-sm'} truncate`}>
+                {npub ? truncateNpub(npub, 10) : '—'}
+              </div>
             </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-bone/50">Identity</div>
-            {displayName ? (
-              <div className="font-mono text-sm font-bold truncate">{displayName}</div>
-            ) : null}
-            <div className={`font-mono ${displayName ? 'text-[10px] text-bone/40' : 'text-sm'} truncate`}>
-              {npub ? truncateNpub(npub, 10) : '—'}
-            </div>
-          </div>
+          </button>
           {npub && (
             <div className="flex gap-1.5 shrink-0">
               <button
@@ -108,6 +116,16 @@ export default function Sidebar() {
       <ReceiveInvoiceCard />
       <SendCard />
       <BackupPhraseCard />
+
+      {viewing ? (
+        <ProfileView
+          onClose={() => setViewing(false)}
+          onEdit={() => {
+            setViewing(false);
+            setEditing(true);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
