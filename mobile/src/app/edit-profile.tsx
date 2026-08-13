@@ -25,17 +25,56 @@ import Avatar from '@/components/Avatar';
 import { mono, sansBold, sansHeavy, sectionLabel, useZapprTheme } from '@/lib/theme';
 import { publishProfile } from '@/lib/nostr/events';
 import { useNostrStore } from '@/store/useNostrStore';
+import { useWalletStore } from '@/store/useWalletStore';
 import { toast } from '@/store/useToastStore';
+import type { SparkAdapter } from '@/lib/wallet/sparkAdapter';
 
 export default function EditProfileScreen() {
   const t = useZapprTheme();
   const { ndk, pubkey, npub, profile, setIdentity, upsertProfile } = useNostrStore();
+
+  const walletAdapter = useWalletStore((s) => s.adapter);
 
   const [name, setName] = useState(profile?.displayName || profile?.name || '');
   const [about, setAbout] = useState(profile?.about || '');
   const [picture, setPicture] = useState(profile?.picture || '');
   const [lud16, setLud16] = useState(profile?.lud16 || '');
   const [saving, setSaving] = useState(false);
+  const [linking, setLinking] = useState(false);
+
+  /*
+    The built-in Spark wallet can BE the zap target: the SDK registers a
+    Lightning address (user@breez.tips) whose payments land directly in the
+    Spark balance. One tap fills it in as lud16.
+  */
+  const useZapprWallet = async () => {
+    if (!walletAdapter || walletAdapter.kind !== 'spark' || linking) return;
+    const spark = walletAdapter as SparkAdapter;
+    setLinking(true);
+    try {
+      let addr = await spark.lightningAddress();
+      if (!addr) {
+        const base =
+          (name || npub?.slice(5, 13) || 'zappr')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '')
+            .slice(0, 20) || 'zappr';
+        try {
+          addr = await spark.registerLightningAddress(base);
+        } catch {
+          // Username taken (or rejected) — retry with a numeric suffix.
+          addr = await spark.registerLightningAddress(
+            `${base}${Math.floor(Math.random() * 900 + 100)}`
+          );
+        }
+      }
+      setLud16(addr);
+      toast('Zaps will land in your zappr wallet');
+    } catch {
+      toast('Could not register a wallet address — try again');
+    }
+    setLinking(false);
+  };
 
   const save = async () => {
     if (!ndk || !pubkey || !npub || saving) return;
@@ -174,17 +213,48 @@ export default function EditProfileScreen() {
           )}
           {field(
             'Lightning address',
-            <TextInput
-              value={lud16}
-              onChangeText={setLud16}
-              placeholder="you@wallet.com"
-              placeholderTextColor={t.faint}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              style={inputStyle}
-            />,
-            'Where zaps on your notes get paid. Without it nobody can zap you.'
+            <>
+              <TextInput
+                value={lud16}
+                onChangeText={setLud16}
+                placeholder="you@wallet.com"
+                placeholderTextColor={t.faint}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                style={inputStyle}
+              />
+              {walletAdapter?.kind === 'spark' ? (
+                <Pressable
+                  onPress={useZapprWallet}
+                  disabled={linking}
+                  style={{
+                    marginTop: 8,
+                    borderWidth: 1,
+                    borderColor: t.line,
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 7,
+                    opacity: linking ? 0.6 : 1,
+                  }}
+                >
+                  {linking ? (
+                    <ActivityIndicator size="small" color={t.orange} />
+                  ) : (
+                    <Ionicons name="flash-outline" size={14} color={t.orange} />
+                  )}
+                  <Text style={{ color: t.bone, fontSize: 13, fontWeight: '600' }}>
+                    Use my zappr wallet
+                  </Text>
+                </Pressable>
+              ) : null}
+            </>,
+            walletAdapter?.kind === 'spark'
+              ? 'Zaps go to this address. Tap the button to receive them straight into your zappr wallet.'
+              : 'Where zaps on your notes get paid. Without it nobody can zap you.'
           )}
 
           <Pressable

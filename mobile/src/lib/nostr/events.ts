@@ -105,19 +105,56 @@ export async function fetchGlobalFeed(
   return sortNotes(events);
 }
 
+function toFeedNote(ev: NDKEvent): FeedNote {
+  return {
+    id: ev.id,
+    pubkey: ev.pubkey,
+    content: ev.content,
+    createdAt: ev.created_at || 0,
+    tags: ev.tags,
+  };
+}
+
 function sortNotes(events: Set<NDKEvent>): FeedNote[] {
-  const notes: FeedNote[] = [];
-  for (const ev of events) {
-    notes.push({
-      id: ev.id,
-      pubkey: ev.pubkey,
-      content: ev.content,
-      createdAt: ev.created_at || 0,
-      tags: ev.tags,
-    });
-  }
+  const notes = Array.from(events, toFeedNote);
   notes.sort((a, b) => b.createdAt - a.createdAt);
   return notes;
+}
+
+/*
+  Profile page data: the notes a user liked (kind:7) or reposted (kind:6),
+  newest engagement first. Two round-trips: the user's marks, then the
+  referenced notes by id.
+*/
+export async function fetchEngagedNotes(
+  ndk: NDK,
+  pubkey: string,
+  kind: 6 | 7,
+  limit = 30
+): Promise<FeedNote[]> {
+  const marks = await fetchEventsWithTimeout(ndk, {
+    kinds: [kind as NDKKind],
+    authors: [pubkey],
+    limit: limit * 2,
+  });
+  const orderedIds: string[] = [];
+  const seen = new Set<string>();
+  for (const ev of Array.from(marks).sort((a, b) => (b.created_at || 0) - (a.created_at || 0))) {
+    for (const t of ev.tags) {
+      if (t[0] === 'e' && t[1]?.length === 64 && !seen.has(t[1])) {
+        seen.add(t[1]);
+        orderedIds.push(t[1]);
+      }
+    }
+  }
+  const ids = orderedIds.slice(0, limit);
+  if (ids.length === 0) return [];
+  const events = await fetchEventsWithTimeout(ndk, { ids });
+  const byId = new Map(Array.from(events, (ev) => [ev.id, ev] as const));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((ev): ev is NDKEvent => !!ev)
+    .map(toFeedNote);
 }
 
 export async function fetchProfile(ndk: NDK, pubkey: string): Promise<NostrProfile | null> {

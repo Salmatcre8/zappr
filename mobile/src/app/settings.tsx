@@ -97,7 +97,10 @@ export default function SettingsScreen() {
         </Text>
         <View style={{ paddingHorizontal: 18 }}>
           {pubkey && npub ? (
-            <View style={[rowCard, { flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+            <Pressable
+              onPress={() => router.push('/profile')}
+              style={[rowCard, { flexDirection: 'row', alignItems: 'center', gap: 12 }]}
+            >
               <Avatar
                 pubkey={pubkey}
                 picture={profile?.picture}
@@ -125,7 +128,7 @@ export default function SettingsScreen() {
               >
                 <Text style={{ color: t.dim, fontSize: 11.5, fontWeight: '600' }}>Copy</Text>
               </Pressable>
-            </View>
+            </Pressable>
           ) : (
             <View style={[rowCard, { flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
               <Text style={{ flex: 1, color: t.dim, fontSize: 14 }}>Not logged in</Text>

@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import Avatar from '@/components/Avatar';
 import NoteRow from '@/components/NoteRow';
 import ConfirmSheet from '@/components/ConfirmSheet';
 import FollowSheet from '@/components/FollowSheet';
@@ -33,7 +34,7 @@ const DEFAULT_ZAP_SATS = 21;
 export default function FeedScreen() {
   const t = useZapprTheme();
   const {
-    ndk, pubkey, follows, feed, profiles,
+    ndk, pubkey, follows, feed, profiles, profile,
     setNdk, setFollows, setFeed, upsertProfiles,
   } = useNostrStore();
   const walletAdapter = useWalletStore((s) => s.adapter);
@@ -224,7 +225,17 @@ export default function FeedScreen() {
             Feed
           </Text>
         </View>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          {pubkey ? (
+            <Pressable onPress={() => router.push('/profile')}>
+              <Avatar
+                pubkey={pubkey}
+                picture={profile?.picture}
+                name={profile?.displayName || profile?.name}
+                size={34}
+              />
+            </Pressable>
+          ) : null}
           <Pressable
             onPress={() =>
               pubkey ? setFollowSheet(true) : toast('Log in from the login screen to follow people')
