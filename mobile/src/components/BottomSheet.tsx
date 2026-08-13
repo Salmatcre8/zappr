@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Pressable, Text, View } from 'react-native';
 import { sansBold, useZapprTheme } from '@/lib/theme';
 
 /*
@@ -20,10 +20,11 @@ export default function BottomSheet({
   const t = useZapprTheme();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      {/*
+        'padding' on BOTH platforms: Android's adjustResize does not apply
+        inside a Modal window, so without this the keyboard covers the sheet.
+      */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <Pressable
           onPress={onClose}
           style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.38)' }}
