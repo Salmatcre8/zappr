@@ -142,6 +142,32 @@ export default function SettingsScreen() {
               </Pressable>
             </View>
           )}
+          {pubkey ? (
+            <Pressable
+              onPress={() => router.push('/edit-profile')}
+              style={[
+                rowCard,
+                {
+                  marginTop: 8,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                },
+              ]}
+            >
+              <View>
+                <Text style={{ color: t.bone, fontSize: 14.5, fontWeight: '500' }}>
+                  Edit profile
+                </Text>
+                <Text style={{ color: t.faint, fontSize: 12, marginTop: 1 }}>
+                  {profile?.displayName || profile?.name
+                    ? 'Name, picture, Lightning address'
+                    : 'You appear as "anon" — set a name so people recognize you'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={15} color={t.faint} />
+            </Pressable>
+          ) : null}
         </View>
 
         <Text style={[sectionLabel(t), { paddingHorizontal: 18, paddingTop: 22, paddingBottom: 6 }]}>

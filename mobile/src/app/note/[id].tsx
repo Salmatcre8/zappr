@@ -27,12 +27,15 @@ import { mono, sans, sansBold, sansHeavy, sansSemiBold, useZapprTheme } from '@/
 import { timeAgo } from '@/lib/relative-time';
 import { initNDK } from '@/lib/nostr/ndk';
 import {
+  fetchMyEngagement,
   fetchNoteById,
   fetchProfiles,
   fetchReplies,
   publishReaction,
   publishReply,
+  publishRepost,
 } from '@/lib/nostr/events';
+import { addMark, loadMarks } from '@/lib/nostr/engage-cache';
 import { truncateNpub } from '@/lib/nostr/keys';
 import { useNostrStore } from '@/store/useNostrStore';
 import { toast } from '@/store/useToastStore';
@@ -81,6 +84,34 @@ export default function NoteThreadScreen() {
   const [sending, setSending] = useState(false);
   const [liked, setLiked] = useState(false);
   const [liking, setLiking] = useState(false);
+  const [reposted, setReposted] = useState(false);
+  const [reposting, setReposting] = useState(false);
+
+  // Like/Repost state must survive closing the thread: local cache answers
+  // instantly, then the relays confirm (covers likes from other devices).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!id) return;
+      const [likedCache, repostCache] = await Promise.all([
+        loadMarks('liked'),
+        loadMarks('reposted'),
+      ]);
+      if (cancelled) return;
+      if (likedCache.has(id)) setLiked(true);
+      if (repostCache.has(id)) setReposted(true);
+      if (pubkey && ndk) {
+        const mine = await fetchMyEngagement(ndk, pubkey, id).catch(() => null);
+        if (cancelled || !mine) return;
+        if (mine.liked) setLiked(true);
+        if (mine.reposted) setReposted(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, pubkey, ndk]);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,11 +172,26 @@ export default function NoteThreadScreen() {
     try {
       await publishReaction(ndk, note);
       setLiked(true);
+      await addMark('liked', note.id);
       toast('❤️ Liked');
     } catch {
       toast('Reaction failed to publish — try again');
     }
     setLiking(false);
+  };
+
+  const repost = async () => {
+    if (!ndk || !pubkey || !note || reposted || reposting) return;
+    setReposting(true);
+    try {
+      await publishRepost(ndk, note);
+      setReposted(true);
+      await addMark('reposted', note.id);
+      toast('🔁 Reposted to your followers');
+    } catch {
+      toast('Repost failed to publish — try again');
+    }
+    setReposting(false);
   };
 
   const noteProfile = note ? profiles[note.pubkey] : undefined;
@@ -231,6 +277,41 @@ export default function NoteThreadScreen() {
             }}
           >
             {liked ? 'Liked' : 'Like'}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={repost}
+          disabled={!pubkey || reposted || reposting}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: reposted ? 'transparent' : t.line,
+            backgroundColor: reposted ? t.orange : 'transparent',
+            opacity: pubkey ? 1 : 0.5,
+          }}
+        >
+          {reposting ? (
+            <ActivityIndicator size="small" color={t.dim} />
+          ) : (
+            <Ionicons
+              name="repeat-outline"
+              size={15}
+              color={reposted ? t.onOrange : t.dim}
+            />
+          )}
+          <Text
+            style={{
+              fontSize: 12.5,
+              fontWeight: reposted ? '700' : '600',
+              color: reposted ? t.onOrange : t.dim,
+            }}
+          >
+            {reposted ? 'Reposted' : 'Repost'}
           </Text>
         </Pressable>
         {replies.length > 0 ? (

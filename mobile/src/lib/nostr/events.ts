@@ -287,6 +287,90 @@ export async function publishReply(
   return ev.id;
 }
 
+/*
+  "Did I already engage with this note?" — one query for the viewer's own
+  kind:6/7 events so Like/Repost state survives closing and reopening a
+  thread (relays are the source of truth; a local cache smooths slow ones).
+*/
+export async function fetchMyEngagement(
+  ndk: NDK,
+  pubkey: string,
+  noteId: string
+): Promise<{ liked: boolean; reposted: boolean }> {
+  const events = await fetchEventsWithTimeout(
+    ndk,
+    { kinds: [6, 7] as NDKKind[], authors: [pubkey], '#e': [noteId] },
+    5000
+  );
+  let liked = false;
+  let reposted = false;
+  for (const ev of events) {
+    if (ev.kind === 7) liked = true;
+    else if (ev.kind === 6) reposted = true;
+  }
+  return { liked, reposted };
+}
+
+export async function publishRepost(ndk: NDK, note: FeedNote): Promise<string> {
+  const ev = new NDKEvent(ndk);
+  ev.kind = 6;
+  ev.content = '';
+  ev.tags = [
+    ['e', note.id],
+    ['p', note.pubkey],
+  ];
+  await ev.publish(appRelays(ndk));
+  return ev.id;
+}
+
+/*
+  kind:0 profile publish. kind:0 is replaceable — publishing a partial
+  object would WIPE fields we don't manage (banner, nip05, …), so merge
+  the updates into the latest metadata on the relays first.
+*/
+export async function publishProfile(
+  ndk: NDK,
+  pubkey: string,
+  updates: { name?: string; about?: string; picture?: string; lud16?: string }
+): Promise<NostrProfile> {
+  let existing: Record<string, unknown> = {};
+  try {
+    const events = await fetchEventsWithTimeout(ndk, {
+      kinds: [0 as NDKKind],
+      authors: [pubkey],
+    });
+    const latest = Array.from(events).sort(
+      (a, b) => (b.created_at || 0) - (a.created_at || 0)
+    )[0];
+    if (latest) existing = JSON.parse(latest.content) as Record<string, unknown>;
+  } catch {}
+  const merged = { ...existing } as Record<string, unknown>;
+  for (const [k, v] of Object.entries(updates)) {
+    if (v === undefined) continue;
+    if (v === '') delete merged[k];
+    else merged[k] = v;
+  }
+  // Keep display_name in sync for clients that read it instead of name.
+  if (updates.name !== undefined) {
+    if (updates.name === '') delete merged.display_name;
+    else merged.display_name = updates.name;
+  }
+  const ev = new NDKEvent(ndk);
+  ev.kind = 0;
+  ev.content = JSON.stringify(merged);
+  await ev.publish(appRelays(ndk));
+  return {
+    npub: hexToNpub(pubkey),
+    pubkey,
+    name: (merged.name as string) || undefined,
+    displayName: (merged.display_name as string) || undefined,
+    picture: (merged.picture as string) || undefined,
+    nip05: (merged.nip05 as string) || undefined,
+    lud16: (merged.lud16 as string) || undefined,
+    about: (merged.about as string) || undefined,
+  };
+}
+
 export async function publishReaction(ndk: NDK, note: FeedNote): Promise<string> {
   const ev = new NDKEvent(ndk);
   ev.kind = 7;
