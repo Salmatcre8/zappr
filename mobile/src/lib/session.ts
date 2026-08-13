@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { derivePubkeyFromNsec } from '@/lib/nostr/keys';
 import { initNDK } from '@/lib/nostr/ndk';
 import { fetchProfile } from '@/lib/nostr/events';
+import { loadOwnProfile, saveOwnProfile } from '@/lib/nostr/profile-cache';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
 import { clearSession, getSecret, saveSecret, VAULT_KEYS } from '@/lib/vault';
 import { useNostrStore } from '@/store/useNostrStore';
@@ -30,10 +31,25 @@ async function activate(nsec: string): Promise<void> {
   const store = useNostrStore.getState();
   store.setNdk(ndk);
   store.setIdentity(hex, npub);
-  // Profile is cosmetic — fill it in when the relays answer.
-  fetchProfile(ndk, hex).then((p) => {
-    if (p) useNostrStore.getState().setIdentity(hex, npub, p);
+  // Own profile: the local cache answers instantly (never "anon" on a cold
+  // start), then the relays reconcile — with retries, because a single
+  // attempt right after connect races the websocket handshakes.
+  loadOwnProfile(hex).then((cached) => {
+    if (cached && !useNostrStore.getState().profile) {
+      useNostrStore.getState().setIdentity(hex, npub, cached);
+    }
   });
+  (async () => {
+    for (const delay of [0, 5000, 15000]) {
+      if (delay) await new Promise((r) => setTimeout(r, delay));
+      const p = await fetchProfile(ndk, hex).catch(() => null);
+      if (p && (p.name || p.displayName || p.picture || p.lud16 || p.about)) {
+        useNostrStore.getState().setIdentity(hex, npub, p);
+        await saveOwnProfile(p);
+        return;
+      }
+    }
+  })().catch(() => {});
 }
 
 /*

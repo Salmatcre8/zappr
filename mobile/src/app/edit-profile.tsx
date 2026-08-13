@@ -24,6 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Avatar from '@/components/Avatar';
 import { mono, sansBold, sansHeavy, sectionLabel, useZapprTheme } from '@/lib/theme';
 import { publishProfile } from '@/lib/nostr/events';
+import { saveOwnProfile } from '@/lib/nostr/profile-cache';
 import { useNostrStore } from '@/store/useNostrStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { toast } from '@/store/useToastStore';
@@ -88,6 +89,7 @@ export default function EditProfileScreen() {
       });
       setIdentity(pubkey, npub, updated);
       upsertProfile(updated);
+      await saveOwnProfile(updated);
       toast('Profile published');
       router.back();
     } catch {
