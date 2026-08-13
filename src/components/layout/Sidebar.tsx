@@ -10,7 +10,8 @@ import ProfileEditor from '@/components/profile/ProfileEditor';
 import ProfileView from '@/components/profile/ProfileView';
 import { useWalletStore } from '@/store/useWalletStore';
 import { useNostrStore } from '@/store/useNostrStore';
-import { fetchProfile } from '@/lib/nostr/events';
+import { fetchProfiles } from '@/lib/nostr/events';
+import { loadOwnProfile, saveOwnProfile } from '@/lib/nostr/profile-cache';
 import { truncateNpub } from '@/lib/nostr/keys';
 import { User, Copy, Check, UserPen } from 'lucide-react';
 
@@ -21,23 +22,40 @@ export default function Sidebar() {
   const [editing, setEditing] = useState(false);
   const [viewing, setViewing] = useState(false);
 
-  // The login/hydration paths set identity without metadata — pull the
-  // user's own kind:0 so the card (and the editor prefill) show it.
+  /*
+    Own-profile hydration. The login paths set identity without metadata,
+    and a single relay fetch right after connect races the websocket
+    handshakes — which looked like the profile "resetting" on refresh.
+    The local cache answers instantly; the relays reconcile with retries.
+  */
   useEffect(() => {
     let cancelled = false;
     if (!ndk || !pubkey || !npub || profile) return;
-    fetchProfile(ndk, pubkey)
-      .then((p) => {
-        if (!cancelled && p && (p.name || p.displayName || p.picture || p.lud16 || p.about)) {
-          setIdentity(pubkey, npub, p);
+    const cached = loadOwnProfile(pubkey);
+    if (cached) setIdentity(pubkey, npub, cached);
+    (async () => {
+      for (const delay of [1000, 6000, 15000]) {
+        await new Promise((r) => setTimeout(r, delay));
+        if (cancelled) return;
+        const found: Record<string, import('@/types/nostr').NostrProfile> = await fetchProfiles(
+          ndk,
+          [pubkey]
+        ).catch(() => ({}));
+        const p = found[pubkey];
+        if (p && (p.name || p.displayName || p.picture || p.lud16 || p.about)) {
+          if (!cancelled) {
+            setIdentity(pubkey, npub, p);
+            saveOwnProfile(p);
+          }
+          return;
         }
-      })
-      .catch(() => {});
+      }
+    })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ndk, pubkey, npub, profile]);
+  }, [ndk, pubkey, npub]);
 
   const copyNpub = async () => {
     if (!npub) return;
