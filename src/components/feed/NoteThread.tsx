@@ -12,6 +12,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { Heart, Loader2, MessageCircle, Send, X } from 'lucide-react';
 import type { FeedNote } from '@/types/nostr';
 import { fetchProfile, fetchReplies, publishReaction, publishReply } from '@/lib/nostr/events';
+import { splitMedia } from '@/lib/nostr/note-media';
 import { useNostrStore } from '@/store/useNostrStore';
 import { truncateNpub, hexToNpub } from '@/lib/nostr/keys';
 import NoteCard from './NoteCard';
@@ -30,9 +31,28 @@ function ReplyRow({ reply }: { reply: FeedNote }) {
         <span className="font-mono text-[10px] text-bone/40 truncate">{truncateNpub(npub, 6)}</span>
         <span className="font-mono text-[10px] text-bone/40 ml-auto shrink-0">{when}</span>
       </div>
-      <div className="font-sans text-sm text-bone/90 whitespace-pre-wrap break-words">
-        {reply.content}
-      </div>
+      {(() => {
+        const { text, images } = splitMedia(reply.content);
+        return (
+          <>
+            {text ? (
+              <div className="font-sans text-sm text-bone/90 whitespace-pre-wrap break-words">
+                {text}
+              </div>
+            ) : null}
+            {images.map((src) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={src}
+                src={src}
+                alt=""
+                loading="lazy"
+                className="mt-1.5 w-full max-h-64 object-cover border border-line rounded-xl"
+              />
+            ))}
+          </>
+        );
+      })()}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { MessageCircle, Repeat2, Heart, Zap } from 'lucide-react';
 import type { FeedNote } from '@/types/nostr';
 import type { NoteEngagement } from '@/lib/nostr/events';
+import { splitMedia } from '@/lib/nostr/note-media';
 import { useNostrStore } from '@/store/useNostrStore';
 import { truncateNpub, hexToNpub } from '@/lib/nostr/keys';
 import ZapButton from './ZapButton';
@@ -90,9 +91,28 @@ export default function NoteCard({
         </div>
         <div className="font-mono text-[10px] text-bone/50 shrink-0">{when}</div>
       </header>
-      <div className="font-sans text-sm text-bone/90 whitespace-pre-wrap break-words">
-        {renderContent(note.content)}
-      </div>
+      {(() => {
+        const { text, images } = splitMedia(note.content);
+        return (
+          <>
+            {text ? (
+              <div className="font-sans text-sm text-bone/90 whitespace-pre-wrap break-words">
+                {renderContent(text)}
+              </div>
+            ) : null}
+            {images.map((src) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={src}
+                src={src}
+                alt=""
+                loading="lazy"
+                className="mt-2 w-full max-h-80 object-cover border border-line rounded-xl"
+              />
+            ))}
+          </>
+        );
+      })()}
       <footer className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {onOpen ? (

@@ -2,6 +2,49 @@ import NDK, { NDKEvent, NDKFilter, NDKKind, NDKUser } from '@nostr-dev-kit/ndk';
 import type { FeedNote, NostrProfile } from '@/types/nostr';
 import { hexToNpub } from './keys';
 
+/*
+  Every relay read goes through fetchEventsWithTimeout instead of
+  ndk.fetchEvents: fetchEvents resolves only when EVERY relay sends EOSE,
+  so a single dead relay (a failed websocket never EOSEs) hangs the promise
+  forever. The mobile app shipped this wrapper first; the web showed the
+  same infinite "Loading replies…" the day a public relay went down.
+  Partial results beat no results.
+*/
+const FETCH_TIMEOUT_MS = 8000;
+
+function fetchEventsWithTimeout(
+  ndk: NDK,
+  filter: NDKFilter,
+  ms = FETCH_TIMEOUT_MS
+): Promise<Set<NDKEvent>> {
+  return new Promise((resolve) => {
+    const events = new Map<string, NDKEvent>();
+    let settled = false;
+    const sub = ndk.subscribe(filter, { closeOnEose: true, groupable: false });
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      try {
+        sub.stop();
+      } catch {}
+      resolve(new Set(events.values()));
+    };
+    const timer = setTimeout(done, ms);
+    sub.on('event', (ev: NDKEvent) => {
+      events.set(ev.id, ev);
+    });
+    sub.on('eose', done);
+  });
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 export async function fetchFollowList(
   ndk: NDK,
   pubkey: string
@@ -9,7 +52,7 @@ export async function fetchFollowList(
   // Fetch all kind:3 events for the user across relays and pick the newest.
   // Relays can return stale contact lists, so we explicitly sort by created_at.
   const filter: NDKFilter = { kinds: [3 as NDKKind], authors: [pubkey] };
-  const events = await ndk.fetchEvents(filter);
+  const events = await fetchEventsWithTimeout(ndk, filter);
   const latest = Array.from(events).sort(
     (a, b) => (b.created_at || 0) - (a.created_at || 0)
   )[0];
@@ -30,7 +73,7 @@ export async function fetchFeed(
 ): Promise<FeedNote[]> {
   if (authors.length === 0) return [];
   const filter: NDKFilter = { kinds: [1 as NDKKind], authors, limit };
-  const events = await ndk.fetchEvents(filter);
+  const events = await fetchEventsWithTimeout(ndk, filter);
   const notes: FeedNote[] = [];
   for (const ev of events) {
     notes.push({
@@ -49,7 +92,7 @@ export async function fetchProfile(ndk: NDK, pubkey: string): Promise<NostrProfi
   try {
     const user = new NDKUser({ pubkey });
     user.ndk = ndk;
-    const p = await user.fetchProfile();
+    const p = await withTimeout(user.fetchProfile(), FETCH_TIMEOUT_MS, null);
     if (!p) return { npub: hexToNpub(pubkey), pubkey };
     return {
       npub: hexToNpub(pubkey),
@@ -112,7 +155,7 @@ export async function fetchEngagement(
     kinds: [1, 6, 7, 9735] as NDKKind[],
     '#e': noteIds,
   };
-  const events = await ndk.fetchEvents(filter);
+  const events = await fetchEventsWithTimeout(ndk, filter);
   const idSet = new Set(noteIds);
   const seen = new Set<string>();
   const map: Record<string, NoteEngagement> = {};
@@ -143,7 +186,7 @@ export async function fetchEngagement(
   NIP-10-tagged publish helpers for replying and reacting.
 */
 export async function fetchReplies(ndk: NDK, noteId: string): Promise<FeedNote[]> {
-  const events = await ndk.fetchEvents({ kinds: [1 as NDKKind], '#e': [noteId] });
+  const events = await fetchEventsWithTimeout(ndk, { kinds: [1 as NDKKind], '#e': [noteId] });
   const notes: FeedNote[] = [];
   const seen = new Set<string>();
   for (const ev of events) {
