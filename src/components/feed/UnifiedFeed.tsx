@@ -2,9 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useNostrStore } from '@/store/useNostrStore';
-import { fetchFeed, fetchFollowList, fetchProfile } from '@/lib/nostr/events';
+import {
+  fetchEngagement,
+  fetchFeed,
+  fetchFollowList,
+  fetchProfile,
+  type NoteEngagement,
+} from '@/lib/nostr/events';
 import { loadFollows, saveFollows } from '@/lib/nostr/follow-cache';
+import type { FeedNote } from '@/types/nostr';
 import NoteCard from './NoteCard';
+import NoteThread from './NoteThread';
 import FollowCard from './FollowCard';
 import { Loader2, Radio, RefreshCw } from 'lucide-react';
 
@@ -14,6 +22,8 @@ export default function UnifiedFeed() {
     loadingFeed, setLoadingFeed, upsertProfile, profiles,
   } = useNostrStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [engagement, setEngagement] = useState<Record<string, NoteEngagement>>({});
+  const [openNote, setOpenNote] = useState<FeedNote | null>(null);
 
   // Resolve which authors to fetch the feed for: prefer in-memory follows,
   // then the local cache, then a relay-side kind:3 fetch. We always kick off
@@ -61,6 +71,13 @@ export default function UnifiedFeed() {
       const authors = await resolveAuthors();
       const notes = authors.length ? await fetchFeed(ndk, authors, 40) : [];
       setFeed(notes);
+      // Engagement is one batched #e subscription for the whole feed —
+      // fire-and-forget so the notes render immediately (issue #13).
+      if (notes.length) {
+        fetchEngagement(ndk, notes.map((n) => n.id))
+          .then(setEngagement)
+          .catch(() => {});
+      }
       const uniqueAuthors = Array.from(new Set(notes.map((n) => n.pubkey)));
       uniqueAuthors.slice(0, 30).forEach(async (p) => {
         if (profiles[p]) return;
@@ -117,11 +134,18 @@ export default function UnifiedFeed() {
           <>
             {!noFollows && <FollowCard onChanged={manualRefresh} />}
             {feed.map((note) => (
-              <NoteCard key={note.id} note={note} />
+              <NoteCard
+                key={note.id}
+                note={note}
+                engagement={engagement[note.id]}
+                onOpen={setOpenNote}
+              />
             ))}
           </>
         )}
       </div>
+
+      {openNote ? <NoteThread note={openNote} onClose={() => setOpenNote(null)} /> : null}
     </div>
   );
 }

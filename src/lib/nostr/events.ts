@@ -74,6 +74,130 @@ export async function publishNote(ndk: NDK, content: string): Promise<string> {
   return ev.id;
 }
 
+/*
+  Engagement (issue #13) — replies, reposts, reactions, zaps for a set of
+  notes, in ONE batched subscription filtered by #e. Counts are inherently
+  approximate: they only reflect the relays we're connected to.
+*/
+export type NoteEngagement = {
+  replies: number;
+  reposts: number;
+  reactions: number;
+  zaps: number;
+  zapSats: number;
+};
+
+const blankEngagement = (): NoteEngagement => ({
+  replies: 0,
+  reposts: 0,
+  reactions: 0,
+  zaps: 0,
+  zapSats: 0,
+});
+
+/** Amount encoded in a bolt11 invoice's human-readable part, in sats. */
+function bolt11AmountSats(pr: string): number {
+  const m = /^ln(?:bc|tb|bcrt)(\d+)([munp])?1/.exec(pr.toLowerCase());
+  if (!m) return 0;
+  const mult = { m: 1e-3, u: 1e-6, n: 1e-9, p: 1e-12 }[m[2] as 'm' | 'u' | 'n' | 'p'] ?? 1;
+  return Math.round(Number(m[1]) * mult * 1e8);
+}
+
+export async function fetchEngagement(
+  ndk: NDK,
+  noteIds: string[]
+): Promise<Record<string, NoteEngagement>> {
+  if (noteIds.length === 0) return {};
+  const filter: NDKFilter = {
+    kinds: [1, 6, 7, 9735] as NDKKind[],
+    '#e': noteIds,
+  };
+  const events = await ndk.fetchEvents(filter);
+  const idSet = new Set(noteIds);
+  const seen = new Set<string>();
+  const map: Record<string, NoteEngagement> = {};
+  for (const ev of events) {
+    if (seen.has(ev.id)) continue; // de-dupe across relays
+    seen.add(ev.id);
+    // One event can reference several of our notes; credit each once.
+    const refs = new Set(
+      ev.tags.filter((t) => t[0] === 'e' && idSet.has(t[1])).map((t) => t[1])
+    );
+    for (const id of refs) {
+      const e = (map[id] ??= blankEngagement());
+      if (ev.kind === 1) e.replies += 1;
+      else if (ev.kind === 6) e.reposts += 1;
+      else if (ev.kind === 7) e.reactions += 1;
+      else if (ev.kind === 9735) {
+        e.zaps += 1;
+        const bolt11 = ev.tags.find((t) => t[0] === 'bolt11')?.[1];
+        if (bolt11) e.zapSats += bolt11AmountSats(bolt11);
+      }
+    }
+  }
+  return map;
+}
+
+/*
+  Thread view (issue #14) — replies to one note, oldest first, plus the
+  NIP-10-tagged publish helpers for replying and reacting.
+*/
+export async function fetchReplies(ndk: NDK, noteId: string): Promise<FeedNote[]> {
+  const events = await ndk.fetchEvents({ kinds: [1 as NDKKind], '#e': [noteId] });
+  const notes: FeedNote[] = [];
+  const seen = new Set<string>();
+  for (const ev of events) {
+    if (seen.has(ev.id)) continue;
+    seen.add(ev.id);
+    notes.push({
+      id: ev.id,
+      pubkey: ev.pubkey,
+      content: ev.content,
+      createdAt: ev.created_at || 0,
+      tags: ev.tags,
+    });
+  }
+  notes.sort((a, b) => a.createdAt - b.createdAt);
+  return notes;
+}
+
+export async function publishReply(
+  ndk: NDK,
+  parent: FeedNote,
+  content: string
+): Promise<string> {
+  const ev = new NDKEvent(ndk);
+  ev.kind = 1;
+  ev.content = content;
+  // NIP-10 marked tags: if the parent is itself a reply, keep its root as
+  // our root and mark the parent as the direct reply target.
+  const rootTag = parent.tags.find((t) => t[0] === 'e' && t[3] === 'root');
+  ev.tags = rootTag
+    ? [
+        ['e', rootTag[1], '', 'root'],
+        ['e', parent.id, '', 'reply'],
+      ]
+    : [['e', parent.id, '', 'root']];
+  // Notify the parent author plus everyone already tagged upstream.
+  const ps = new Set<string>([parent.pubkey]);
+  for (const t of parent.tags) if (t[0] === 'p' && t[1]?.length === 64) ps.add(t[1]);
+  for (const p of ps) ev.tags.push(['p', p]);
+  await ev.publish();
+  return ev.id;
+}
+
+export async function publishReaction(ndk: NDK, note: FeedNote): Promise<string> {
+  const ev = new NDKEvent(ndk);
+  ev.kind = 7;
+  ev.content = '+';
+  ev.tags = [
+    ['e', note.id],
+    ['p', note.pubkey],
+  ];
+  await ev.publish();
+  return ev.id;
+}
+
 export async function publishContacts(
   ndk: NDK,
   pubkeys: string[]
