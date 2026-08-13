@@ -38,7 +38,7 @@ async function activate(nsec: string): Promise<void> {
 
 /*
   Background wallet reconnect — never blocks launch, failure is silent.
-  Prefers the self-custodial Breez wallet (vaulted mnemonic) like web's
+  Prefers the self-custodial Spark wallet (vaulted mnemonic) like web's
   hydrateBreez; falls back to a saved NWC connection.
 */
 function hydrateSavedWallet(): void {
@@ -47,9 +47,9 @@ function hydrateSavedWallet(): void {
     const mnemonic = await getSecret(VAULT_KEYS.breezMnemonic);
     if (mnemonic) {
       try {
-        const { BreezAdapter, breezConfigured } = await import('@/lib/wallet/breezAdapter');
-        if (breezConfigured) {
-          const adapter = await BreezAdapter.connect(mnemonic);
+        const { SparkAdapter, sparkConfigured } = await import('@/lib/wallet/sparkAdapter');
+        if (sparkConfigured) {
+          const adapter = await SparkAdapter.connect(mnemonic);
           useWalletStore.getState().setAdapter(adapter);
           try {
             useWalletStore.getState().setBalance(await adapter.getBalance());
@@ -57,7 +57,7 @@ function hydrateSavedWallet(): void {
           return;
         }
       } catch {
-        // Breez needs the dev build + API key; fall through to NWC.
+        // Spark needs the dev build + API key; fall through to NWC.
       }
     }
     const url = await getSecret(VAULT_KEYS.nwcUrl);
@@ -91,7 +91,7 @@ export async function loginWithNsec(nsec: string, nwc?: string): Promise<void> {
 
 /**
  * Seedless passkey login (issue #6, web's "Create with FaceID / Fingerprint"):
- * one passkey + PRF → deterministic nsec + Liquid mnemonic, nothing to write
+ * one passkey + PRF → deterministic nsec + wallet mnemonic, nothing to write
  * down. Requires the dev build (native passkeys) and the domain association.
  */
 export async function loginWithPasskey(create: boolean): Promise<void> {
@@ -104,8 +104,8 @@ export async function loginWithPasskey(create: boolean): Promise<void> {
   const mnemonic = deriveMnemonicFromPrf(out.liquidPrf);
   await activate(nsec);
   await saveSecret(VAULT_KEYS.nsec, nsec);
-  // Wallet mnemonic waits for the Breez native SDK (#7) but is derived and
-  // vaulted now so Backup can show it and the wallet can init later.
+  // The same PRF-derived mnemonic seeds the Spark wallet (and previously the
+  // Liquid one) — vaulted here so Backup can show it and the wallet can init.
   await saveSecret(VAULT_KEYS.breezMnemonic, mnemonic);
   await AsyncStorage.setItem(SESSION_FLAG, JSON.stringify({ method: 'passkey' }));
   hydrateSavedWallet();

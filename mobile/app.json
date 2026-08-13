@@ -38,6 +38,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      "@breeztech/breez-sdk-spark-react-native",
       [
         "expo-local-authentication",
         {

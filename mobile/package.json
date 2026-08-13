@@ -3,6 +3,7 @@
   "main": "index.js",
   "version": "1.0.0",
   "dependencies": {
+    "@breeztech/breez-sdk-spark-react-native": "^0.22.0",
     "@breeztech/react-native-breez-sdk-liquid": "^0.11.13",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/space-mono": "^0.4.2",
@@ -19,6 +20,7 @@
     "expo-crypto": "~15.0.9",
     "expo-dev-client": "~6.0.21",
     "expo-device": "~8.0.10",
+    "expo-file-system": "~19.0.23",
     "expo-font": "~14.0.12",
     "expo-image": "~3.0.11",
     "expo-linking": "~8.0.12",

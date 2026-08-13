@@ -41,7 +41,7 @@ export default function WalletScreen() {
   /*
     Self-custodial wallet — the newbie path, like web: nobody should need
     to know what NWC is. Opens the vaulted mnemonic (passkey-derived, or
-    generated right here) into the Breez SDK. Needs the dev build.
+    generated right here) into the Breez Spark SDK. Needs the dev build.
   */
   const openZapprWallet = async (createNew: boolean) => {
     setConnecting(true);
@@ -57,8 +57,8 @@ export default function WalletScreen() {
         mnemonic = await getSecret(VAULT_KEYS.breezMnemonic, { gate: 'Open your zappr wallet' });
         if (!mnemonic) throw new Error('Could not unlock the wallet mnemonic.');
       }
-      const { BreezAdapter } = await import('@/lib/wallet/breezAdapter');
-      const a = await BreezAdapter.connect(mnemonic);
+      const { SparkAdapter } = await import('@/lib/wallet/sparkAdapter');
+      const a = await SparkAdapter.connect(mnemonic);
       setAdapter(a);
       await refresh(a);
       if (createNew) toast('Wallet created — save your recovery phrase via Backup');
@@ -444,7 +444,11 @@ export default function WalletScreen() {
                   <Text style={{ color: t.dim, fontSize: 13 }}>sats</Text>
                 </View>
                 <Text style={{ color: t.dim, fontSize: 13, marginTop: 6 }}>
-                  {adapter.kind === 'breez' ? 'Liquid · self-custodial' : 'via Nostr Wallet Connect'}
+                  {adapter.kind === 'nwc'
+                    ? 'via Nostr Wallet Connect'
+                    : adapter.kind === 'spark'
+                      ? 'Spark · self-custodial'
+                      : 'Liquid · self-custodial'}
                 </Text>
               </View>
             </View>
