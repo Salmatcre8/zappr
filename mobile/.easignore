@@ -1,0 +1,45 @@
+# EAS upload rules — mirrors .gitignore EXCEPT .env is allowed through:
+# it holds only EXPO_PUBLIC_* values (Breez ships its key client-side by
+# design), and standalone preview/production builds inline them at bundle
+# time on the EAS worker. Never put server secrets in mobile/.env.
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files — .env intentionally NOT listed
+.env.*.local
+
+# typescript
+*.tsbuildinfo
+
+example
+
+# generated native folders
+/ios
+/android
