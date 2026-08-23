@@ -53,6 +53,41 @@ async function activate(nsec: string): Promise<void> {
 }
 
 /*
+  A second device on the same identity has no NWC string in its keystore —
+  it was only ever saved on the first phone. Ask the relays for the NIP-78
+  record before concluding there is no wallet (APK feedback, issue 2).
+*/
+async function recoverNwcFromRelays(): Promise<string | null> {
+  const { ndk, pubkey } = useNostrStore.getState();
+  if (!ndk || !pubkey) return null;
+  const nsec = await getSecret(VAULT_KEYS.nsec);
+  if (!nsec) return null;
+  const { fetchNwc } = await import('@/lib/nostr/app-data');
+  const url = await fetchNwc(ndk, nsec, pubkey).catch(() => null);
+  if (url) await saveSecret(VAULT_KEYS.nwcUrl, url);
+  return url;
+}
+
+/**
+ * Persist an NWC connection both on this device and — encrypted to the user's
+ * own key — on the relays, so the next device inherits it. Relay failure is
+ * non-fatal: the local wallet still works.
+ */
+export async function rememberNwc(url: string): Promise<void> {
+  await saveSecret(VAULT_KEYS.nwcUrl, url);
+  const { ndk, pubkey } = useNostrStore.getState();
+  if (!ndk || !pubkey) return;
+  const nsec = await getSecret(VAULT_KEYS.nsec);
+  if (!nsec) return;
+  try {
+    const { publishNwc } = await import('@/lib/nostr/app-data');
+    await publishNwc(ndk, nsec, pubkey, url);
+  } catch {
+    // Offline or every relay rejected it — try again next time it connects.
+  }
+}
+
+/*
   Background wallet reconnect — never blocks launch, failure is silent.
   Prefers the self-custodial Spark wallet (vaulted mnemonic) like web's
   hydrateBreez; falls back to a saved NWC connection.
@@ -76,7 +111,7 @@ function hydrateSavedWallet(): void {
         // Spark needs the dev build + API key; fall through to NWC.
       }
     }
-    const url = await getSecret(VAULT_KEYS.nwcUrl);
+    const url = (await getSecret(VAULT_KEYS.nwcUrl)) ?? (await recoverNwcFromRelays());
     if (!url || useWalletStore.getState().adapter) return;
     const adapter = await NwcAdapter.connect(url);
     useWalletStore.getState().setAdapter(adapter, { connectionString: url });
@@ -96,7 +131,7 @@ export async function loginWithNsec(nsec: string, nwc?: string): Promise<void> {
     try {
       const adapter = await NwcAdapter.connect(url);
       useWalletStore.getState().setAdapter(adapter, { connectionString: url });
-      await saveSecret(VAULT_KEYS.nwcUrl, url);
+      await rememberNwc(url);
     } catch {
       // Identity login succeeded; a bad NWC string shouldn't block it.
     }

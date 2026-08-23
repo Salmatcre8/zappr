@@ -219,7 +219,7 @@ export default function SettingsScreen() {
             </Text>
           </View>
           <Pressable
-            onPress={() => toast('Recovery phrase arrives with the Breez wallet (#6/#7)')}
+            onPress={() => router.push('/recovery-phrase')}
             style={[
               rowCard,
               {

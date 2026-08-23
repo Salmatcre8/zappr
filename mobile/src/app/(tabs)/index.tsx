@@ -13,6 +13,7 @@ import { timeAgo } from '@/lib/relative-time';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
 import { lnAddressToInvoice } from '@/lib/wallet/lightning';
 import { getSecret, hasSecret, saveSecret, VAULT_KEYS } from '@/lib/vault';
+import { rememberNwc } from '@/lib/session';
 import { useNostrStore } from '@/store/useNostrStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { toast } from '@/store/useToastStore';
@@ -125,7 +126,8 @@ export default function WalletScreen() {
     try {
       const a = await NwcAdapter.connect(trimmed);
       setAdapter(a, { connectionString: trimmed });
-      if (persist) await saveSecret(VAULT_KEYS.nwcUrl, trimmed);
+      // Syncs to the relays too, so the next device inherits this wallet.
+      if (persist) await rememberNwc(trimmed);
       setNwcInput('');
       await refresh(a);
     } catch (e) {
