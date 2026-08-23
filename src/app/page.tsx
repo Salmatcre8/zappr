@@ -1,17 +1,15 @@
 import Link from 'next/link';
-import { Zap, Radio, Wallet, Bot, ArrowRight, Github, Shield } from 'lucide-react';
+import { Radio, Wallet, Bot, ArrowRight, Github, Shield } from 'lucide-react';
 import ThemeToggle from '@/components/layout/ThemeToggle';
+import ZapprLogo from '@/components/brand/ZapprLogo';
 
 export default function LandingPage() {
   return (
     <main className="min-h-[100dvh] w-full flex flex-col">
       {/* NAV */}
       <nav className="flex items-center justify-between p-4 md:p-6">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-orange flex items-center justify-center border border-line rounded-xl shadow-brut-sm">
-            <Zap className="w-5 h-5 text-ink" strokeWidth={3} />
-          </div>
-          <span className="font-mono text-xl md:text-2xl font-bold">zappr</span>
+        <div className="flex items-center">
+          <ZapprLogo size={24} />
         </div>
         <div className="flex items-center gap-2 md:gap-3">
           <ThemeToggle />

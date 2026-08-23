@@ -1,6 +1,7 @@
 'use client';
 
-import { Zap, Radio, LogOut } from 'lucide-react';
+import { Radio, LogOut } from 'lucide-react';
+import ZapprLogo from '@/components/brand/ZapprLogo';
 import { useNostrStore } from '@/store/useNostrStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { truncateNpub } from '@/lib/nostr/keys';
@@ -36,11 +37,8 @@ export default function TopBar() {
 
   return (
     <header className="brut-panel mx-3 md:mx-4 mt-3 md:mt-4 px-3 md:px-4 py-2.5 md:py-3 flex items-center justify-between shrink-0">
-      <div className="flex items-center gap-2 md:gap-3 min-w-0">
-        <div className="w-8 h-8 bg-orange flex items-center justify-center border border-line rounded-xl shrink-0">
-          <Zap className="w-4 h-4 text-ink" strokeWidth={3} />
-        </div>
-        <span className="font-mono text-lg md:text-xl font-bold">zappr</span>
+      <div className="flex items-center min-w-0">
+        <ZapprLogo size={20} />
       </div>
       <div className="flex items-center gap-2 md:gap-3 font-mono text-xs">
         <div className="hidden sm:flex items-center gap-1.5">
