@@ -6,9 +6,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ZapprMark from '@/components/ZapprMark';
+import ZapprWordmark from '@/components/ZapprWordmark';
 import {
-  mono, monoBold, sansBold, sansSemiBold, sectionLabel, useZapprTheme,
+  mono, sansBold, sansSemiBold, sectionLabel, useZapprTheme,
 } from '@/lib/theme';
 import { loginWithNsec, loginWithPasskey, unlockSavedIdentity } from '@/lib/session';
 import { passkeysAvailable } from '@/lib/auth/native-passkey';
@@ -134,20 +134,10 @@ export default function LoginScreen() {
           contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 22, paddingVertical: 28 }}
         >
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            {/* Brand wordmark (guidelines §03): the mark IS the z — "appr" completes it */}
+            {/* Brand lockup (guidelines §03): the mark IS the z — "appr" completes it */}
             <View style={{ marginBottom: 26 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                <ZapprMark size={40} color={t.orange} />
-                <Text
-                  style={[
-                    monoBold,
-                    { color: t.bone, fontSize: 36, lineHeight: 40, letterSpacing: -2 },
-                  ]}
-                >
-                  appr
-                </Text>
-              </View>
-              <Text style={[mono, { color: t.faint, fontSize: 10, letterSpacing: 2, marginTop: 6 }]}>
+              <ZapprWordmark size={36} markColor={t.orange} wordColor={t.bone} />
+              <Text style={[mono, { color: t.faint, fontSize: 10, letterSpacing: 2, marginTop: 8 }]}>
                 BITCOIN · NOSTR · AI
               </Text>
             </View>
