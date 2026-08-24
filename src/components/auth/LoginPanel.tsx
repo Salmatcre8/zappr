@@ -51,6 +51,16 @@ export default function LoginPanel() {
     try {
       const adapter = await NwcAdapter.connect(connectionString);
       useWalletStore.getState().setAdapter(adapter, { connectionString });
+      /*
+        Publish it to the identity's own NIP-78 record so the next device
+        inherits the wallet instead of asking for the string again (issue 2).
+        Runs after the store is populated, and never blocks login.
+      */
+      const { ndk, pubkey } = useNostrStore.getState();
+      if (ndk && pubkey) {
+        const { publishNwc } = await import('@/lib/nostr/app-data');
+        void publishNwc(ndk, pubkey, connectionString).catch(() => {});
+      }
       try {
         useWalletStore.getState().setBalance(await adapter.getBalance());
       } catch {}

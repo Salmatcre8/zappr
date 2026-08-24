@@ -4,11 +4,14 @@ import { useState } from 'react';
 import { Wallet, Loader2 } from 'lucide-react';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
 import { useWalletStore } from '@/store/useWalletStore';
+import { useNostrStore } from '@/store/useNostrStore';
+import { publishNwc } from '@/lib/nostr/app-data';
 
 export default function ConnectWallet() {
   const [value, setValue] = useState('');
   const { connecting, error, setConnecting, setError, setAdapter, setBalance, setTxs } =
     useWalletStore();
+  const { ndk, pubkey } = useNostrStore();
 
   const connect = async () => {
     if (!value.trim()) return;
@@ -17,6 +20,10 @@ export default function ConnectWallet() {
     try {
       const adapter = await NwcAdapter.connect(value.trim());
       setAdapter(adapter, { connectionString: value.trim() });
+      // Carry the connection to this identity's other devices (issue 2).
+      if (ndk && pubkey) {
+        void publishNwc(ndk, pubkey, value.trim()).catch(() => {});
+      }
       try {
         setBalance(await adapter.getBalance());
         setTxs(await adapter.listTransactions(5));
