@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View,
+  ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,9 +18,10 @@ import { toast } from '@/store/useToastStore';
 
 /*
   Mirrors the web LoginPanel (web src/components/auth/LoginPanel.tsx):
-  1. "Create with FaceID / Fingerprint" + "I already have a passkey wallet"
-     — the beginner path, top when no vault exists. REAL on the dev build
-     (native passkeys + PRF, issue #6); explains itself in Expo Go.
+  1. "Sign in with passkey" (discovery) then "Create a new wallet" — sign-in
+     leads so a user who enrolled on the website lands back in THAT wallet;
+     creating is behind a confirm because it mints a second identity. REAL on
+     the dev build (native passkeys + PRF, issue #6); explains itself in Expo Go.
   2. "Unlock with biometric" when an identity is saved on this device.
   3. nsec + optional NWC string.
   4. Browse-only escape hatch.
@@ -53,9 +55,31 @@ export default function LoginScreen() {
       await loginWithPasskey(create);
       enter();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Passkey failed');
+      const msg = e instanceof Error ? e.message : 'Passkey failed';
+      // A failed discovery usually means "nothing enrolled on this device"
+      // rather than a real fault — point at the create path instead of
+      // leaving a raw Credential Manager string on screen.
+      setError(
+        create ? msg : `${msg}. If you have never used zappr before, create a new wallet below.`
+      );
     }
     setBusy(null);
+  };
+
+  /*
+    Creating mints a second, unrelated identity. Make that explicit — the
+    team's APK feedback had a tester tap straight past it and conclude their
+    sats had vanished.
+  */
+  const confirmCreate = () => {
+    Alert.alert(
+      'Create a new wallet?',
+      'This makes a brand-new passkey, wallet and Nostr identity on this phone.\n\nIf you already use zappr on the web, tap "Sign in with passkey" instead — a new wallet starts empty and will not show your existing sats.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Create new', style: 'destructive', onPress: () => doPasskey(true) },
+      ]
+    );
   };
 
   const doUnlock = async () => {
@@ -153,39 +177,50 @@ export default function LoginScreen() {
             >
               {!hasSavedNsec ? (
                 <>
-                  <Pressable
-                    onPress={() => doPasskey(true)}
-                    disabled={!!busy}
-                    style={primaryBtn(!!busy)}
-                  >
-                    {busy === 'fresh' ? (
-                      <ActivityIndicator color={t.onOrange} />
-                    ) : (
-                      <Ionicons name="sparkles" size={16} color={t.onOrange} />
-                    )}
-                    <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
-                      {busy === 'fresh' ? 'Creating wallet…' : 'Create with Passkey'}
-                    </Text>
-                  </Pressable>
-                  <Text style={[mono, { color: t.faint, fontSize: 10.5, lineHeight: 16, marginTop: 8 }]}>
-                    New to Bitcoin? One tap creates a self-custodial Lightning wallet and Nostr
-                    identity. No seed phrase. No keys to copy.
-                  </Text>
-
+                  {/*
+                    Sign-in leads. Creating is the destructive-by-surprise
+                    action here: it mints a SECOND passkey, so a user who
+                    already has a web wallet lands in an empty one and their
+                    sats look lost. Discovery finds the website's passkey
+                    (same RP ID + assetlinks), so it must be the easy path.
+                  */}
                   <Pressable
                     onPress={() => doPasskey(false)}
                     disabled={!!busy}
-                    style={[ghostBtn, { marginTop: 12 }]}
+                    style={primaryBtn(!!busy)}
                   >
                     {busy === 'recover' ? (
-                      <ActivityIndicator color={t.orange} />
+                      <ActivityIndicator color={t.onOrange} />
                     ) : (
-                      <Ionicons name="finger-print" size={16} color={t.bone} />
+                      <Ionicons name="finger-print" size={17} color={t.onOrange} />
                     )}
-                    <Text style={[sansSemiBold, { color: t.bone, fontSize: 14 }]}>
-                      {busy === 'recover' ? 'Recovering…' : 'I already have a passkey wallet'}
+                    <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
+                      {busy === 'recover' ? 'Signing in…' : 'Sign in with passkey'}
                     </Text>
                   </Pressable>
+                  <Text style={[mono, { color: t.faint, fontSize: 10.5, lineHeight: 16, marginTop: 8 }]}>
+                    Already used zappr on the web? This finds that same wallet — your sats and
+                    profile come with it.
+                  </Text>
+
+                  <Pressable
+                    onPress={confirmCreate}
+                    disabled={!!busy}
+                    style={[ghostBtn, { marginTop: 12 }]}
+                  >
+                    {busy === 'fresh' ? (
+                      <ActivityIndicator color={t.orange} />
+                    ) : (
+                      <Ionicons name="sparkles" size={16} color={t.bone} />
+                    )}
+                    <Text style={[sansSemiBold, { color: t.bone, fontSize: 14 }]}>
+                      {busy === 'fresh' ? 'Creating wallet…' : 'Create a new wallet'}
+                    </Text>
+                  </Pressable>
+                  <Text style={[mono, { color: t.faint, fontSize: 10.5, lineHeight: 16, marginTop: 8 }]}>
+                    New to Bitcoin? One tap, nothing to write down. Makes a brand-new wallet,
+                    separate from any zappr wallet you already have.
+                  </Text>
 
                   {divider('Or use an existing identity')}
                 </>
