@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type NDK from '@nostr-dev-kit/ndk';
 import { useRouter } from 'next/navigation';
 import { Radio, Wallet, Bot, Loader2 } from 'lucide-react';
 import { useNostrStore } from '@/store/useNostrStore';
@@ -10,6 +11,7 @@ import { derivePubkeyFromNsec } from '@/lib/nostr/keys';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
 import { SparkAdapter } from '@/lib/wallet/sparkAdapter';
 import { loadSession, clearSession } from '@/lib/auth/session';
+import { fetchNwc } from '@/lib/nostr/app-data';
 import { vaultGet } from '@/lib/auth/vault';
 import { unlockVault } from '@/lib/auth/webauthn';
 import {
@@ -22,6 +24,24 @@ import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
 import UnifiedFeed from '@/components/feed/UnifiedFeed';
 import BiometricSetupBanner from '@/components/auth/BiometricSetupBanner';
+
+/*
+  Second device on the same identity: nothing local to reconnect, so ask the
+  relays for the NIP-78 NWC record before settling on "no wallet" (APK
+  feedback, issue 2). Never awaited by the hydration flow — the dashboard
+  should not wait on relays to render, the wallet just fills in when it lands.
+*/
+async function hydrateNwcFromRelays(ndk: NDK, pubkey: string) {
+  if (useWalletStore.getState().adapter) return;
+  const url = await fetchNwc(ndk, pubkey).catch(() => null);
+  // Re-check: a local wallet may have connected while we were waiting.
+  if (!url || useWalletStore.getState().adapter) return;
+  try {
+    const adapter = await NwcAdapter.connect(url);
+    useWalletStore.getState().setAdapter(adapter, { connectionString: url });
+    useWalletStore.getState().setBalance(await adapter.getBalance());
+  } catch {}
+}
 
 type Tab = 'wallet' | 'feed' | 'agent';
 
@@ -60,6 +80,7 @@ export default function DashboardPage() {
           } catch (e) {
             console.warn('Spark hydrate failed', e);
           }
+          void hydrateNwcFromRelays(ndkInst, hex);
           if (!cancelled) setHydrating(false);
           return;
         } catch {
@@ -85,6 +106,7 @@ export default function DashboardPage() {
               useWalletStore.getState().setBalance(await adapter.getBalance());
             } catch {}
           }
+          void hydrateNwcFromRelays(ndkInst, hex);
           if (!cancelled) setHydrating(false);
           return;
         } catch {
@@ -127,6 +149,7 @@ export default function DashboardPage() {
             useWalletStore.getState().setBalance(await adapter.getBalance());
           } catch {}
         }
+        void hydrateNwcFromRelays(ndkInst, hex);
 
         if (!cancelled) setHydrating(false);
       } catch {
