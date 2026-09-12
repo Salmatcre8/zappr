@@ -68,9 +68,11 @@ export default function BackupPhraseCard() {
       {!mnemonic ? (
         <>
           <p className="font-mono text-[10px] text-bone/50 leading-relaxed">
-            Your wallet was created from your fingerprint. If this device is lost,
-            this 12-word phrase is the only way to recover funds elsewhere. Reveal
-            it once, write it down, store it offline.
+            Your wallet was created from your fingerprint. If that passkey is ever
+            lost, this 12-word phrase is the only way to reach these funds. Your
+            sats sit on Spark, so restoring takes a wallet that supports Spark.
+            Reveal it now, write it down, store it offline — showing the words
+            needs your passkey, so this stops working the moment that passkey does.
           </p>
           <button
             onClick={reveal}

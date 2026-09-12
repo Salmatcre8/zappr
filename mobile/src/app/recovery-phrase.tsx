@@ -105,8 +105,17 @@ export default function RecoveryPhraseScreen() {
           </Text>
           <Text style={{ color: t.text2, fontSize: 13.5, lineHeight: 20, marginTop: 10 }}>
             These 12 words are the backup underneath that wallet. You need them only if you lose
-            the passkey — they restore your sats in any standard Lightning or Bitcoin wallet that
-            accepts a recovery phrase.
+            the passkey. It is a standard BIP-39 phrase, but your sats sit on Spark — restoring
+            them takes a wallet that supports Spark, not any Lightning wallet.
+          </Text>
+          {/*
+            The words are derived from the passkey, and revealing them needs a
+            working PRF assertion — so this screen cannot help anyone after the
+            passkey is gone. Say that plainly rather than implying it.
+          */}
+          <Text style={{ color: t.text2, fontSize: 13.5, lineHeight: 20, marginTop: 10 }}>
+            Write them down now. Showing them needs your passkey, so this screen stops working the
+            moment that passkey does.
           </Text>
         </View>
 
