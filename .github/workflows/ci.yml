@@ -1,0 +1,64 @@
+name: CI
+
+# Runs on every push and PR to main. The web build type-checks the whole repo
+# (root tsconfig excludes mobile/, which has its own), so both apps are covered.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: web — lint, types, tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          # Build-time only. The real key is set in Vercel; a placeholder keeps
+          # the seedless path compiling without putting a secret in CI.
+          NEXT_PUBLIC_BREEZ_API_KEY: ci-placeholder
+
+  mobile:
+    name: mobile — types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      # --ignore-scripts skips the Kotlin patch postinstall, which only matters
+      # for native builds on EAS, not for type-checking.
+      - run: npm ci --ignore-scripts
+        working-directory: mobile
+      - run: npx tsc --noEmit
+        working-directory: mobile
+
+  audit:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    # Advisory for now: the tree currently has known highs (see the security
+    # audit, F-18). Flipping continue-on-error to false is the gate to raise
+    # once those are cleared.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm audit --audit-level=high --package-lock-only

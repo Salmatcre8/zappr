@@ -33,10 +33,14 @@ export function deriveNsecFromPrf(prfOutput: Uint8Array): {
   const master = HDKey.fromMasterSeed(prfOutput);
   const child = master.derive(NOSTR_PATH);
   if (!child.privateKey) throw new Error('BIP32 derivation produced no private key');
+  // `hex` is the PUBLIC key — callers use it as a pubkey (relay author
+  // filters, setIdentity). Returning the private key here leaked it to relays
+  // on web; mobile was saved only by activate() recomputing from the nsec.
+  const pubkeyHex = getPublicKey(child.privateKey);
   return {
     nsec: nip19.nsecEncode(child.privateKey),
-    hex: bytesToHex(child.privateKey),
-    npub: nip19.npubEncode(getPublicKey(child.privateKey)),
+    hex: pubkeyHex,
+    npub: nip19.npubEncode(pubkeyHex),
   };
 }
 

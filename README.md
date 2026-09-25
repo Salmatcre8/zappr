@@ -28,7 +28,7 @@ Bitcoin onboarding is still difficult for many everyday users.
 
 Between seed phrases, multiple tools, unfamiliar terminology, and language barriers, new users can feel overwhelmed before they even send their first sat.
 
-zappr simplifies that experience by combining Nostr, Lightning, and conversational Al into one self-custodial interface - accessible in the languages people already think in.
+zappr simplifies that experience by combining Nostr, Lightning, and conversational AI into one self-custodial interface - accessible in the languages people already think in.
 
 ---
 

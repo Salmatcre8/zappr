@@ -53,7 +53,7 @@ export default function LandingPage() {
                   Enter zappr <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/Salmatcre8/zappr"
                   target="_blank"
                   rel="noreferrer"
                   className="brut-btn-ghost flex items-center gap-2"
@@ -110,7 +110,7 @@ export default function LandingPage() {
       <section className="px-4 md:px-10 py-10 md:py-16 border-t border-line">
         <div className="max-w-6xl mx-auto">
           <div className="font-mono text-[10px] md:text-xs uppercase tracking-widest text-bone/50 mb-2">
-            // core features
+            {'// core features'}
           </div>
           <h2 className="font-mono text-2xl md:text-4xl font-bold mb-8 md:mb-12">
             One terminal. Three superpowers.
