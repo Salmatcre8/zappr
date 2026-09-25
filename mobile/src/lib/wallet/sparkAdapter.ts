@@ -16,6 +16,7 @@
   Docs: https://sdk-doc-spark.breez.technology/
 */
 import type { WalletAdapter } from './adapter';
+import { assertInvoiceAmount } from '@/lib/wallet/invoice';
 import type { WalletTx } from '@/types/wallet';
 import {
   connect,
@@ -87,7 +88,9 @@ export class SparkAdapter implements WalletAdapter {
     return Number(info.balanceSats);
   }
 
-  async payInvoice(bolt11: string): Promise<{ preimage?: string }> {
+  async payInvoice(bolt11: string, expectedSats: number): Promise<{ preimage?: string }> {
+    // Refuses anything that does not match what the user approved.
+    assertInvoiceAmount(bolt11, expectedSats);
     const prepareResponse = await this.instance.prepareSendPayment({
       paymentRequest: new PaymentRequest.Input({ input: bolt11 }),
       amount: undefined,

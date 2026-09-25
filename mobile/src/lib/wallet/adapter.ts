@@ -11,7 +11,12 @@ export type WalletKind = 'nwc' | 'breez' | 'spark';
 export interface WalletAdapter {
   kind: WalletKind;
   getBalance(): Promise<number>;
-  payInvoice(bolt11: string): Promise<{ preimage?: string }>;
+  /*
+    `expectedSats` is what the user was actually shown. Adapters assert the
+    invoice against it before spending (security audit F-01). Required, not
+    optional, so a new call site cannot quietly omit the check.
+  */
+  payInvoice(bolt11: string, expectedSats: number): Promise<{ preimage?: string }>;
   makeInvoice(amountSats: number, memo?: string): Promise<string>;
   listTransactions(limit?: number): Promise<WalletTx[]>;
   disconnect?(): Promise<void>;

@@ -23,6 +23,7 @@ import {
   sendPayment,
 } from '@breeztech/react-native-breez-sdk-liquid';
 import type { WalletAdapter } from './adapter';
+import { assertInvoiceAmount } from '@/lib/wallet/invoice';
 import type { WalletTx } from '@/types/wallet';
 
 export const BREEZ_API_KEY = process.env.EXPO_PUBLIC_BREEZ_API_KEY ?? '';
@@ -67,7 +68,9 @@ export class BreezAdapter implements WalletAdapter {
     return info.walletInfo.balanceSat;
   }
 
-  async payInvoice(bolt11: string): Promise<{ preimage?: string }> {
+  async payInvoice(bolt11: string, expectedSats: number): Promise<{ preimage?: string }> {
+    // Refuses anything that does not match what the user approved.
+    assertInvoiceAmount(bolt11, expectedSats);
     try {
       const prepareResponse = await prepareSendPayment({ destination: bolt11 });
       const res = await sendPayment({ prepareResponse });

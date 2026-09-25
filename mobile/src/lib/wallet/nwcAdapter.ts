@@ -1,4 +1,5 @@
 import { webln } from '@getalby/sdk';
+import { assertInvoiceAmount } from '@/lib/wallet/invoice';
 import type { WalletAdapter } from './adapter';
 import type { WalletTx } from '@/types/wallet';
 
@@ -19,7 +20,9 @@ export class NwcAdapter implements WalletAdapter {
     return Math.floor(res.balance);
   }
 
-  async payInvoice(bolt11: string): Promise<{ preimage?: string }> {
+  async payInvoice(bolt11: string, expectedSats: number): Promise<{ preimage?: string }> {
+    // Refuses anything that does not match what the user approved.
+    assertInvoiceAmount(bolt11, expectedSats);
     const res = await this.provider.sendPayment(bolt11);
     return { preimage: res?.preimage };
   }

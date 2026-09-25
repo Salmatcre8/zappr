@@ -12,6 +12,7 @@ import { mono, monoBold, sansBold, sansHeavy, sansSemiBold, sectionLabel, useZap
 import { timeAgo } from '@/lib/relative-time';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
 import { lnAddressToInvoice } from '@/lib/wallet/lightning';
+import { classifyPaymentInput, decodeInvoice } from '@/lib/wallet/invoice';
 import { getSecret, hasSecret, saveSecret, VAULT_KEYS } from '@/lib/vault';
 import { rememberNwc } from '@/lib/session';
 import { useNostrStore } from '@/store/useNostrStore';
@@ -167,12 +168,29 @@ export default function WalletScreen() {
     setSendBusy(true);
     try {
       let bolt11 = sendTo.trim();
-      if (bolt11.includes('@')) {
+      let expectedSats: number;
+
+      if (isLnAddress) {
         const sats = parseInt(sendAmount, 10);
         if (!sats || sats <= 0) throw new Error('Enter an amount for a Lightning address');
         bolt11 = await lnAddressToInvoice(bolt11, sats, 'sent via zappr');
+        expectedSats = sats;
+      } else if (classifiedSend.kind === 'bolt11') {
+        // Pay exactly what was decoded and shown on the confirm sheet.
+        const d = decodeInvoice(bolt11);
+        expectedSats = d.hasAmount ? d.sats : parseInt(sendAmount, 10);
+        if (!expectedSats || expectedSats <= 0) {
+          throw new Error('This invoice has no amount — enter one in sats');
+        }
+      } else if (classifiedSend.kind === 'onchain') {
+        throw new Error('That is an on-chain address. zappr sends over Lightning only.');
+      } else if (classifiedSend.kind === 'lnurl') {
+        throw new Error('LNURL is not supported yet — paste a Lightning address or invoice.');
+      } else {
+        throw new Error('Enter a Lightning address or BOLT11 invoice');
       }
-      await adapter.payInvoice(bolt11);
+
+      await adapter.payInvoice(bolt11, expectedSats);
       toast('Payment sent');
       setSendTo('');
       setSendAmount('');
@@ -185,7 +203,21 @@ export default function WalletScreen() {
     setConfirmSend(false);
   };
 
-  const isLnAddress = sendTo.includes('@');
+  /*
+    Security audit F-07: a pasted invoice was paid without ever being decoded
+    or shown — the confirm sheet even said "amount is encoded in the invoice",
+    which is precisely the problem. Decode it and put the figure on screen.
+  */
+  const classifiedSend = classifyPaymentInput(sendTo);
+  const isLnAddress = classifiedSend.kind === 'lightning-address';
+  const sendDecoded = (() => {
+    if (classifiedSend.kind !== 'bolt11') return null;
+    try {
+      return decodeInvoice(sendTo);
+    } catch {
+      return null;
+    }
+  })();
 
   const actionBtn = (
     label: string,
@@ -694,12 +726,31 @@ export default function WalletScreen() {
 
       <ConfirmSheet
         visible={confirmSend}
-        title={isLnAddress ? `Send ${Number(sendAmount || 0).toLocaleString()} sats` : 'Pay invoice'}
+        title={
+          isLnAddress
+            ? `Send ${Number(sendAmount || 0).toLocaleString()} sats`
+            : sendDecoded?.hasAmount
+              ? `Send ${sendDecoded.sats.toLocaleString()} sats`
+              : 'Pay invoice'
+        }
         rows={[
           { label: 'To', value: sendTo.trim().slice(0, 42) + (sendTo.trim().length > 42 ? '…' : '') },
+          { label: 'Type', value: classifiedSend.label },
           ...(isLnAddress ? [{ label: 'Amount', value: `${sendAmount} sats`, accent: true }] : []),
+          ...(sendDecoded?.hasAmount
+            ? [{ label: 'Amount', value: `${sendDecoded.sats.toLocaleString()} sats`, accent: true }]
+            : []),
+          ...(sendDecoded?.description
+            ? [{ label: 'Note', value: sendDecoded.description.slice(0, 42) }]
+            : []),
         ]}
-        note={isLnAddress ? undefined : 'Amount is encoded in the invoice.'}
+        note={
+          sendDecoded?.isExpired
+            ? 'This invoice has expired — ask for a new one.'
+            : sendDecoded && !sendDecoded.hasAmount
+              ? 'This invoice sets no amount — enter one above.'
+              : undefined
+        }
         busy={sendBusy}
         onApprove={approveSend}
         onCancel={() => setConfirmSend(false)}
