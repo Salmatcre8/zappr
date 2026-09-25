@@ -52,13 +52,14 @@ jobs:
   audit:
     name: dependency audit
     runs-on: ubuntu-latest
-    # Advisory for now: the tree currently has known highs (see the security
-    # audit, F-18). Flipping continue-on-error to false is the gate to raise
-    # once those are cleared.
-    continue-on-error: true
+    # A real gate now, not advisory. The Next 15 upgrade took the tree from
+    # 2 critical / 13 high to 0 critical / 1 high, so "no criticals" is a bar
+    # we can actually hold. The remaining high is postcss inside Next itself
+    # (build-time; needs Next 16) and the lows are the fixture-only bolt11
+    # devDependency — raise this to --audit-level=high once those clear.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm audit --audit-level=high --package-lock-only
+      - run: npm audit --audit-level=critical --package-lock-only
