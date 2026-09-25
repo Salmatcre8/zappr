@@ -10,11 +10,15 @@ import { SparkAdapter } from '@/lib/wallet/sparkAdapter';
 import { useNostrStore } from '@/store/useNostrStore';
 import { useWalletStore } from '@/store/useWalletStore';
 import { saveSession } from '@/lib/auth/session';
+import { validateMnemonic } from '@scure/bip39';
+import { wordlist } from '@scure/bip39/wordlists/english.js';
+import { nip19, generateSecretKey } from 'nostr-tools';
 import { vaultGet } from '@/lib/auth/vault';
 import {
   unlockVault,
   isWebAuthnSupported,
   enrollDerivedVault,
+  assertDerivedIdentity,
 } from '@/lib/auth/webauthn';
 import {
   createPasskey,
@@ -24,11 +28,14 @@ import {
   deriveMnemonicFromPrf,
 } from '@/lib/auth/passkey-derive';
 
-type Mode = 'idle' | 'nsec' | 'nip07' | 'biometric' | 'fresh' | 'recover';
+type Mode = 'idle' | 'nsec' | 'nip07' | 'biometric' | 'fresh' | 'recover' | 'restore';
 
 export default function LoginPanel() {
   const router = useRouter();
   const [nsec, setNsec] = useState('');
+  const [showRestore, setShowRestore] = useState(false);
+  const [phrase, setPhrase] = useState('');
+  const [restoreNsec, setRestoreNsec] = useState('');
   const [nwc, setNwc] = useState('');
   const [mode, setMode] = useState<Mode>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +83,50 @@ export default function LoginPanel() {
       useWalletStore.getState().setBalance(await adapter.getBalance());
     } catch {}
   }
+
+  /*
+    Restore from recovery phrase — the escape hatch for a lost passkey.
+
+    The 12 words seed the WALLET only; the Nostr key comes from a different PRF
+    salt and is not in the phrase. So this recovers funds, and takes an nsec
+    separately if the user still has one. Deliberately session-only: nothing is
+    written to storage, because a seed phrase sitting in sessionStorage is a
+    worse trade than asking for it again. Get in, move the sats, done.
+  */
+  const handleRestore = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setMode('restore');
+    try {
+      const words = phrase.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      if (!validateMnemonic(words.join(' '), wordlist)) {
+        throw new Error(
+          `That recovery phrase isn't valid (${words.length} words read). Check the spelling and order.`
+        );
+      }
+      const mnemonic = words.join(' ');
+
+      // Identity: the user's own nsec when they have it, otherwise a fresh key
+      // so the app can run. Their old npub stays with the old passkey.
+      const typed = restoreNsec.trim();
+      if (typed && !typed.startsWith('nsec1')) {
+        throw new Error('That nsec looks wrong (it should start with nsec1). Leave it blank to skip.');
+      }
+      const identityNsec = typed || nip19.nsecEncode(generateSecretKey());
+      const { hex, npub } = derivePubkeyFromNsec(identityNsec);
+
+      const ndk = await initNDK({ nsec: identityNsec });
+      useNostrStore.getState().setNdk(ndk);
+      useNostrStore.getState().setIdentity(hex, npub);
+
+      // The whole point — get the wallet back.
+      await hydrateBreez(mnemonic);
+      router.push('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Restore failed');
+      setMode('idle');
+    }
+  };
 
   // ---- nsec path ----
   const handleNsecSubmit = async (e: React.FormEvent) => {
@@ -143,6 +194,8 @@ export default function LoginPanel() {
       // Derived mode: re-derive both keys via PRF.
       const { nostrPrf, liquidPrf } = await assertPasskey(blob.credentialId);
       const { nsec: derivedNsec, hex, npub } = deriveNsecFromPrf(nostrPrf);
+      // Refuse to sign in as anyone but the account this vault was enrolled with.
+      assertDerivedIdentity(blob, npub);
       const mnemonic = deriveMnemonicFromPrf(liquidPrf);
 
       const ndk = await initNDK({ nsec: derivedNsec });
@@ -154,6 +207,8 @@ export default function LoginPanel() {
       } catch (e) {
         console.warn('Breez hydrate failed', e);
       }
+      // Backfill for vaults enrolled before the identity check existed.
+      if (!blob.npub) await enrollDerivedVault(blob.credentialId, npub);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Biometric unlock failed');
@@ -185,8 +240,16 @@ export default function LoginPanel() {
       } catch (e) {
         console.warn('Breez hydrate failed', e);
       }
+      /*
+        A vault may already exist on this device (e.g. the user is re-running
+        recovery). If it does, the discovered passkey must produce the same
+        account — otherwise they picked a different zappr passkey and we would
+        overwrite the good credential id with the wrong one.
+      */
+      const existing = await vaultGet();
+      if (existing?.kind === 'derived') assertDerivedIdentity(existing, npub);
       // Re-store credential id so future unlocks use the fast path.
-      await enrollDerivedVault(credentialId);
+      await enrollDerivedVault(credentialId, npub);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Recovery failed');
@@ -215,7 +278,9 @@ export default function LoginPanel() {
       useNostrStore.getState().setIdentity(hex, npub);
 
       await hydrateBreez(mnemonic);
-      await enrollDerivedVault(credentialId);
+      // Record the identity this passkey produces, so a later unlock that
+      // derives something different fails loudly instead of silently.
+      await enrollDerivedVault(credentialId, npub);
       // No sessionStorage — vault is the source of truth.
       router.push('/dashboard');
     } catch (err) {
@@ -320,6 +385,73 @@ export default function LoginPanel() {
           </div>
         </div>
       )}
+
+      {/* Lost-passkey escape hatch. Collapsed by default — it is a recovery
+          route, not a login route, and should not compete with the main paths. */}
+      <div className="mt-5">
+        {!showRestore ? (
+          <button
+            type="button"
+            onClick={() => setShowRestore(true)}
+            className="font-mono text-[11px] uppercase tracking-widest text-bone/50 hover:text-orange transition"
+          >
+            Lost your passkey? Restore from recovery phrase →
+          </button>
+        ) : (
+          <form onSubmit={handleRestore} className="brut-panel p-4 space-y-4">
+            <div className="font-mono text-[10px] uppercase tracking-widest text-orange">
+              Restore from recovery phrase
+            </div>
+            <div>
+              <label className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-bone/70 mb-2">
+                <Key className="w-3.5 h-3.5" /> Your 12 words
+              </label>
+              <textarea
+                rows={3}
+                value={phrase}
+                onChange={(e) => setPhrase(e.target.value)}
+                placeholder="witch collapse practice feed shame open despair creek road again ice least"
+                className="brut-input text-[11px]"
+              />
+              <p className="font-mono text-[10px] text-bone/50 leading-relaxed mt-2">
+                This restores your <span className="text-bone/80">wallet</span>. Your Nostr key is
+                not in the phrase — add it below if you still have it, or leave it blank and get a
+                new one. Nothing is saved to this browser, so you will need the phrase again next
+                time.
+              </p>
+            </div>
+            <div>
+              <label className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-bone/70 mb-2">
+                <Key className="w-3.5 h-3.5" /> Nostr key (optional)
+              </label>
+              <input
+                type="password"
+                value={restoreNsec}
+                onChange={(e) => setRestoreNsec(e.target.value)}
+                placeholder="nsec1…"
+                className="brut-input"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={mode !== 'idle' || !phrase.trim()}
+                className="brut-btn flex-1 flex items-center justify-center gap-2"
+              >
+                {mode === 'restore' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {mode === 'restore' ? 'Restoring…' : 'Restore wallet'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowRestore(false)}
+                className="brut-btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
 
       {/* nsec form */}
       <form onSubmit={handleNsecSubmit} className="space-y-5">

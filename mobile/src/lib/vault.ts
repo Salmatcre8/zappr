@@ -29,6 +29,13 @@ export const VAULT_KEYS = {
   nwcUrl: 'zappr.nwc_url',
   /** Breez wallet mnemonic (future — #6/#7). Reconnect reference, NOT session. */
   breezMnemonic: 'zappr.breez_mnemonic',
+  /*
+    The npub this device's passkey is expected to derive. Public data, not a
+    secret — it exists so a passkey that suddenly derives a DIFFERENT account
+    fails loudly instead of dropping the user into an empty wallet. Survives
+    logout with the other reconnect references; only wipeAll() clears it.
+  */
+  npub: 'zappr.npub',
 } as const;
 
 export type VaultKey = (typeof VAULT_KEYS)[keyof typeof VAULT_KEYS];
@@ -87,6 +94,11 @@ export async function hasSecret(key: VaultKey): Promise<boolean> {
   }
 }
 
+/** Remove one secret. Used when a flow deliberately un-pins device state. */
+export async function deleteSecret(key: VaultKey): Promise<void> {
+  await deleteQuietly(key);
+}
+
 async function deleteQuietly(key: VaultKey): Promise<void> {
   try {
     await SecureStore.deleteItemAsync(key, SECURE_OPTS);
@@ -107,5 +119,6 @@ export async function wipeAll(): Promise<void> {
     deleteQuietly(VAULT_KEYS.nsec),
     deleteQuietly(VAULT_KEYS.nwcUrl),
     deleteQuietly(VAULT_KEYS.breezMnemonic),
+    deleteQuietly(VAULT_KEYS.npub),
   ]);
 }

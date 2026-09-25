@@ -28,6 +28,17 @@ export type EncryptedVaultBlob = {
 export type DerivedVaultBlob = {
   kind: 'derived';
   credentialId: Uint8Array;
+  /*
+    The npub this credential is expected to produce.
+
+    Derived mode re-derives both keys from PRF on every unlock, and any 32
+    bytes yield a *valid* nsec — so if the PRF output ever changed we would
+    silently sign the user into a different, empty account with no error.
+    Recording the expected npub turns that into a hard failure. Optional
+    because vaults enrolled before this existed have no value to compare;
+    those are backfilled on the next successful unlock.
+  */
+  npub?: string;
 };
 
 export type VaultBlob = EncryptedVaultBlob | DerivedVaultBlob;

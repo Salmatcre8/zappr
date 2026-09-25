@@ -168,7 +168,41 @@ export async function unlockVault(): Promise<PrfPlaintext> {
  * Persist a derived-mode vault. Stores only the credential id — the nsec and
  * Liquid mnemonic are re-derived from PRF outputs on every unlock.
  */
-export async function enrollDerivedVault(credentialId: Uint8Array): Promise<void> {
-  const blob: DerivedVaultBlob = { kind: 'derived', credentialId };
+export async function enrollDerivedVault(
+  credentialId: Uint8Array,
+  npub?: string
+): Promise<void> {
+  const blob: DerivedVaultBlob = { kind: 'derived', credentialId, npub };
   await vaultPut(blob);
+}
+
+/**
+ * Thrown when a passkey re-derives a different identity than the one this
+ * vault was enrolled with. Distinct type so callers can tell it apart from an
+ * ordinary cancelled/failed ceremony.
+ */
+export class IdentityMismatchError extends Error {
+  constructor(readonly expected: string, readonly actual: string) {
+    super(
+      'This passkey produced a different account than the one saved on this device. ' +
+        'Your existing wallet has not been touched. This usually means a second zappr ' +
+        'passkey was picked — try again and choose the original one.'
+    );
+    this.name = 'IdentityMismatchError';
+  }
+}
+
+/*
+  Gate every derived-mode unlock on the identity it produces.
+
+  Returns the npub to persist: the stored one when it matches, or the freshly
+  derived one when the vault predates this check (backfill). A mismatch throws
+  rather than signing the user in — an empty wallet with no error is the worst
+  possible outcome here, because it reads as "my money is gone".
+*/
+export function assertDerivedIdentity(blob: DerivedVaultBlob, derivedNpub: string): string {
+  if (blob.npub && blob.npub !== derivedNpub) {
+    throw new IdentityMismatchError(blob.npub, derivedNpub);
+  }
+  return derivedNpub;
 }
