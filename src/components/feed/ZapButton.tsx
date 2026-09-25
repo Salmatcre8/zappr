@@ -30,7 +30,7 @@ export default function ZapButton({
     setError(null);
     try {
       const bolt11 = await lnAddressToInvoice(lud16, amount, 'zapped via zappr');
-      await adapter.payInvoice(bolt11);
+      await adapter.payInvoice(bolt11, amount);
       setDone(true);
       setTimeout(() => { setOpen(false); setDone(false); }, 1200);
     } catch (e) {

@@ -8,6 +8,7 @@
 */
 
 import type { WalletAdapter } from './adapter';
+import { assertInvoiceAmount } from '@/lib/wallet/invoice';
 import type { WalletTx } from '@/types/wallet';
 
 // Lazily-initialised handle to the WASM module so SSR doesn't try to load it.
@@ -80,7 +81,9 @@ export class BreezAdapter implements WalletAdapter {
     return info.walletInfo.balanceSat;
   }
 
-  async payInvoice(bolt11: string): Promise<{ preimage?: string }> {
+  async payInvoice(bolt11: string, expectedSats: number): Promise<{ preimage?: string }> {
+    // Refuses anything that does not match what the user approved.
+    assertInvoiceAmount(bolt11, expectedSats);
     try {
       const prepared = await this.sdk.prepareSendPayment({ destination: bolt11 });
       const res = await this.sdk.sendPayment({ prepareResponse: prepared });
