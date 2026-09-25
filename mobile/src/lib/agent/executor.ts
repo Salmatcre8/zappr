@@ -50,7 +50,9 @@ export async function executeTool(name: string, input: Record<string, unknown>):
       if (recipient.includes('@')) {
         bolt11 = await lnAddressToInvoice(recipient, amount, String(input.memo || ''));
       }
-      const res = await wallet.adapter.payInvoice(bolt11);
+      // `amount` is the figure the user approved; if `recipient` was already
+      // an invoice naming a different one, this refuses (audit F-07).
+      const res = await wallet.adapter.payInvoice(bolt11, amount);
       return { success: true, preimage: res.preimage };
     }
     case 'zap_note': {
@@ -63,7 +65,7 @@ export async function executeTool(name: string, input: Record<string, unknown>):
       const profile = await fetchProfile(nostr.ndk, hex);
       if (!profile?.lud16) return { error: 'Target has no Lightning address' };
       const bolt11 = await lnAddressToInvoice(profile.lud16, amount, 'zap via zappr');
-      const res = await wallet.adapter.payInvoice(bolt11);
+      const res = await wallet.adapter.payInvoice(bolt11, amount);
       return { success: true, preimage: res.preimage };
     }
     case 'post_note': {
@@ -95,9 +97,20 @@ export async function executeTool(name: string, input: Record<string, unknown>):
       const orderId = String(input.order_id || '');
       if (!invoice) return { error: 'Missing invoice' };
 
+      /*
+        Security audit F-01. `sats_to_send` is the number rendered on the
+        approval card; `invoice` is what actually gets paid. Nothing used to
+        connect the two, so a proposal could show one figure and attach an
+        invoice for any other. Bind them, and refuse when the figure is absent.
+      */
+      const satsToSend = Number(input.sats_to_send || 0);
+      if (!Number.isFinite(satsToSend) || satsToSend <= 0) {
+        return { error: 'Missing sats_to_send — cannot verify this invoice, refusing to pay' };
+      }
+
       // Pay the Lightning invoice from the user's wallet — this is what
       // triggers MavaPay to release the NGN payout.
-      const payRes = await wallet.adapter.payInvoice(invoice);
+      const payRes = await wallet.adapter.payInvoice(invoice, satsToSend);
 
       // Poll status for ~30s. Real settlement may take longer; we surface
       // whatever state MavaPay reports so the agent can speak to the user.

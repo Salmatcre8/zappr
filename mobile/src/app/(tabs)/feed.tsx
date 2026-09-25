@@ -187,7 +187,7 @@ export default function FeedScreen() {
     try {
       const lud16 = zapTarget.profile.lud16!;
       const bolt11 = await lnAddressToInvoice(lud16, DEFAULT_ZAP_SATS, 'zap via zappr');
-      await walletAdapter.payInvoice(bolt11);
+      await walletAdapter.payInvoice(bolt11, DEFAULT_ZAP_SATS);
       setZapped((z) => ({ ...z, [zapTarget.note.id]: true }));
       toast(`⚡ Zapped ${DEFAULT_ZAP_SATS} sats`);
     } catch (e) {

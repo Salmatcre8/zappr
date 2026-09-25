@@ -32,10 +32,22 @@ describe('restore from recovery phrase', () => {
     expect(validateMnemonic(normalise(messy), wordlist)).toBe(true);
   });
 
+  /*
+    Fixed vectors, not generated ones, for the negative cases.
+
+    A 12-word phrase carries only a 4-bit checksum, so a randomly tampered word
+    still validates roughly 1 run in 16 — which is exactly how this test failed
+    in CI after passing locally. Deterministic inputs or it is not a test.
+  */
+  const KNOWN_GOOD = 'abandon '.repeat(11) + 'about';
+
+  it('accepts the canonical all-zero-entropy vector', () => {
+    expect(validateMnemonic(KNOWN_GOOD, wordlist)).toBe(true);
+  });
+
   it('rejects a phrase with one wrong word (checksum catches typos)', () => {
-    const words = phrase.split(' ');
-    words[0] = words[0] === 'zebra' ? 'zoo' : 'zebra';
-    expect(validateMnemonic(words.join(' '), wordlist)).toBe(false);
+    // 'about' is the only valid final word for this entropy; any other fails.
+    expect(validateMnemonic('abandon '.repeat(11) + 'abandon', wordlist)).toBe(false);
   });
 
   it('rejects a truncated phrase', () => {
@@ -47,10 +59,8 @@ describe('restore from recovery phrase', () => {
   });
 
   it('rejects a reordered phrase', () => {
-    const words = phrase.split(' ');
-    [words[0], words[1]] = [words[1], words[0]];
-    // Reordering breaks the checksum in all but vanishingly rare cases.
-    expect(validateMnemonic(words.join(' '), wordlist)).toBe(false);
+    // Deterministic: moving the checksum word out of final position invalidates.
+    expect(validateMnemonic('about ' + 'abandon '.repeat(11).trim(), wordlist)).toBe(false);
   });
 });
 
