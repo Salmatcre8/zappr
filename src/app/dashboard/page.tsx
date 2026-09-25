@@ -13,7 +13,12 @@ import { SparkAdapter } from '@/lib/wallet/sparkAdapter';
 import { loadSession, clearSession } from '@/lib/auth/session';
 import { fetchNwc } from '@/lib/nostr/app-data';
 import { vaultGet } from '@/lib/auth/vault';
-import { unlockVault } from '@/lib/auth/webauthn';
+import {
+  unlockVault,
+  assertDerivedIdentity,
+  enrollDerivedVault,
+  IdentityMismatchError,
+} from '@/lib/auth/webauthn';
 import {
   assertPasskey,
   deriveNsecFromPrf,
@@ -51,6 +56,8 @@ export default function DashboardPage() {
   const [tab, setTab] = useState<Tab>('feed');
   const [hydrating, setHydrating] = useState(true);
   const [hydrationLabel, setHydrationLabel] = useState('restoring session…');
+  // Set only when hydration must stop and explain itself (identity mismatch).
+  const [fatal, setFatal] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +75,8 @@ export default function DashboardPage() {
           setHydrationLabel('biometric unlock…');
           const { nostrPrf, liquidPrf } = await assertPasskey(blob.credentialId);
           const { nsec, hex, npub } = deriveNsecFromPrf(nostrPrf);
+          // Hard-fail rather than silently restoring a different empty account.
+          assertDerivedIdentity(blob, npub);
           const mnemonic = deriveMnemonicFromPrf(liquidPrf);
           const ndkInst = await initNDK({ nsec });
           if (cancelled) return;
@@ -81,10 +90,22 @@ export default function DashboardPage() {
             console.warn('Spark hydrate failed', e);
           }
           void hydrateNwcFromRelays(ndkInst, hex);
+          if (!blob.npub) await enrollDerivedVault(blob.credentialId, npub);
           if (!cancelled) setHydrating(false);
           return;
-        } catch {
-          if (!cancelled) router.replace('/login');
+        } catch (e) {
+          if (cancelled) return;
+          /*
+            A mismatch is not a failed unlock — it means this passkey belongs
+            to a different account. Bouncing to /login would look like "my
+            wallet is empty"; say what happened instead.
+          */
+          if (e instanceof IdentityMismatchError) {
+            setFatal(e.message);
+            setHydrating(false);
+            return;
+          }
+          router.replace('/login');
           return;
         }
       }
@@ -162,6 +183,27 @@ export default function DashboardPage() {
       cancelled = true;
     };
   }, [pubkey, ndk, router, setNdk, setIdentity]);
+
+  /*
+    Identity mismatch: the passkey unlocked fine but produced a different
+    account. Explain it and offer the way out, rather than dropping the user
+    on a login screen with an empty wallet behind it.
+  */
+  if (fatal) {
+    return (
+      <div className="h-[100dvh] flex items-center justify-center p-6">
+        <div className="brut-panel p-6 max-w-lg space-y-4">
+          <div className="font-mono text-xs uppercase tracking-widest text-orange">
+            Different account
+          </div>
+          <p className="text-sm text-bone/80 leading-relaxed">{fatal}</p>
+          <button onClick={() => router.replace('/login')} className="brut-btn w-full">
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (hydrating) {
     return (
