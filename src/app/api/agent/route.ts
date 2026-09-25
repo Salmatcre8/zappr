@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import { AGENT_TOOLS } from '@/lib/agent/tools';
+import { selectTools, type AgentMessage } from '@/lib/agent/trust';
 import { SYSTEM_PROMPT } from '@/lib/agent/systemPrompt';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
@@ -70,7 +71,9 @@ export async function POST(req: NextRequest) {
         model: 'claude-sonnet-4-6',
         max_tokens: 1024,
         system: SYSTEM_PROMPT,
-        tools: AGENT_TOOLS,
+        // Chosen here, not by the model: a turn that has read third-party feed
+        // text is served without any spending tools (security audit F-02).
+        tools: selectTools(AGENT_TOOLS, body.messages as AgentMessage[]),
         messages: body.messages,
       });
       return NextResponse.json({
@@ -189,7 +192,7 @@ async function openAIFallback(messages: Anthropic.MessageParam[]): Promise<{
       model: OPENAI_MODEL,
       max_tokens: 1024,
       messages: toOpenAIMessages(messages),
-      tools: AGENT_TOOLS.map((t) => ({
+      tools: selectTools(AGENT_TOOLS, messages as AgentMessage[]).map((t) => ({
         type: 'function',
         function: {
           name: t.name,
