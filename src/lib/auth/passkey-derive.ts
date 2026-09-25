@@ -184,9 +184,16 @@ export function deriveNsecFromPrf(prfOutput: ArrayBuffer): {
   if (!child.privateKey) throw new Error('BIP32 derivation produced no private key');
 
   const nsec = nip19.nsecEncode(child.privateKey);
-  const hex = bytesToHex(child.privateKey);
-  // Nostr public key is x-only schnorr — use nostr-tools
-  const npub = computeNpub(child.privateKey);
+  /*
+    `hex` is the PUBLIC key — x-only schnorr, via nostr-tools.
+
+    This previously returned the PRIVATE key. Every caller feeds this value to
+    setIdentity() and to relay `authors` filters, so the user's signing key was
+    being sent to public relays in REQ messages. The mobile app was unaffected:
+    it recomputes the pubkey from the nsec in activate().
+  */
+  const hex = getPublicKey(child.privateKey);
+  const npub = nip19.npubEncode(hex);
   return { nsec, hex, npub };
 }
 
@@ -200,10 +207,4 @@ export function deriveMnemonicFromPrf(prfOutput: ArrayBuffer): string {
   return entropyToMnemonic(entropy, wordlist);
 }
 
-function bytesToHex(b: Uint8Array): string {
-  return Array.from(b).map((x) => x.toString(16).padStart(2, '0')).join('');
-}
 
-function computeNpub(privateKey: Uint8Array): string {
-  return nip19.npubEncode(getPublicKey(privateKey));
-}
