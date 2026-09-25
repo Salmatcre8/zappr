@@ -18,7 +18,7 @@ import { initNDK } from '@/lib/nostr/ndk';
 import { fetchProfile } from '@/lib/nostr/events';
 import { loadOwnProfile, saveOwnProfile } from '@/lib/nostr/profile-cache';
 import { NwcAdapter } from '@/lib/wallet/nwcAdapter';
-import { clearSession, getSecret, saveSecret, VAULT_KEYS } from '@/lib/vault';
+import { clearSession, deleteSecret, getSecret, saveSecret, VAULT_KEYS } from '@/lib/vault';
 import { useNostrStore } from '@/store/useNostrStore';
 import { useAgentStore } from '@/store/useAgentStore';
 import { useWalletStore } from '@/store/useWalletStore';
@@ -151,14 +151,69 @@ export async function loginWithPasskey(create: boolean): Promise<void> {
   const out = create
     ? await createPasskeyNative('zappr account')
     : await discoverPasskeyNative();
-  const { nsec } = deriveNsecFromPrf(out.nostrPrf);
+  const { nsec, npub } = deriveNsecFromPrf(out.nostrPrf);
+  /*
+    Any 32 bytes of PRF output yield a VALID nsec, so a changed or mistaken
+    passkey would silently sign the user into a different, empty account.
+    Refuse instead — an empty wallet with no error reads as "my sats are gone".
+  */
+  const expectedNpub = await getSecret(VAULT_KEYS.npub);
+  if (expectedNpub && expectedNpub !== npub) {
+    throw new Error(
+      'This passkey belongs to a different zappr account. Your existing wallet is ' +
+        'untouched — try again and pick the passkey you originally created.'
+    );
+  }
   const mnemonic = deriveMnemonicFromPrf(out.liquidPrf);
   await activate(nsec);
+  await saveSecret(VAULT_KEYS.npub, npub);
   await saveSecret(VAULT_KEYS.nsec, nsec);
   // The same PRF-derived mnemonic seeds the Spark wallet (and previously the
   // Liquid one) — vaulted here so Backup can show it and the wallet can init.
   await saveSecret(VAULT_KEYS.breezMnemonic, mnemonic);
   await AsyncStorage.setItem(SESSION_FLAG, JSON.stringify({ method: 'passkey' }));
+  hydrateSavedWallet();
+}
+
+/*
+  Restore from a recovery phrase — the escape hatch when the passkey is gone.
+
+  The 12 words seed the WALLET only; the Nostr key comes from a different PRF
+  salt and is not recoverable from them. So this takes an optional nsec for the
+  identity half and, without one, mints a fresh key so the app can run — the old
+  npub stays with the old passkey.
+
+  Unlike web, this device has a hardware keystore, so the restore persists.
+*/
+export async function restoreFromPhrase(mnemonicInput: string, nsecInput?: string): Promise<void> {
+  const { validateMnemonic } = await import('@scure/bip39');
+  const { wordlist } = await import('@scure/bip39/wordlists/english.js');
+  const { nip19, generateSecretKey } = await import('nostr-tools');
+
+  const words = mnemonicInput.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const mnemonic = words.join(' ');
+  if (!validateMnemonic(mnemonic, wordlist)) {
+    throw new Error(
+      `That recovery phrase is not valid (${words.length} words read). Check the spelling and order.`
+    );
+  }
+
+  const typed = (nsecInput ?? '').trim();
+  if (typed && !typed.startsWith('nsec1')) {
+    throw new Error('That nsec looks wrong — it should start with nsec1. Leave it blank to skip.');
+  }
+  const identityNsec = typed || nip19.nsecEncode(generateSecretKey());
+
+  await activate(identityNsec);
+  await saveSecret(VAULT_KEYS.nsec, identityNsec);
+  await saveSecret(VAULT_KEYS.breezMnemonic, mnemonic);
+  /*
+    This device is no longer pinned to a passkey-derived identity, so drop the
+    expected-npub marker. If the user later finds their original passkey, it
+    re-pins cleanly instead of being rejected as "a different account".
+  */
+  await deleteSecret(VAULT_KEYS.npub);
+  await AsyncStorage.setItem(SESSION_FLAG, JSON.stringify({ method: 'restore' }));
   hydrateSavedWallet();
 }
 

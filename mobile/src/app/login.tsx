@@ -11,7 +11,12 @@ import ZapprWordmark from '@/components/ZapprWordmark';
 import {
   mono, sansBold, sansSemiBold, sectionLabel, useZapprTheme,
 } from '@/lib/theme';
-import { loginWithNsec, loginWithPasskey, unlockSavedIdentity } from '@/lib/session';
+import {
+  loginWithNsec,
+  loginWithPasskey,
+  restoreFromPhrase,
+  unlockSavedIdentity,
+} from '@/lib/session';
 import { passkeysAvailable } from '@/lib/auth/native-passkey';
 import { hasSecret, VAULT_KEYS } from '@/lib/vault';
 import { toast } from '@/store/useToastStore';
@@ -26,12 +31,15 @@ import { toast } from '@/store/useToastStore';
   3. nsec + optional NWC string.
   4. Browse-only escape hatch.
 */
-type Busy = 'fresh' | 'recover' | 'unlock' | 'nsec' | null;
+type Busy = 'fresh' | 'recover' | 'unlock' | 'nsec' | 'restore' | null;
 
 export default function LoginScreen() {
   const t = useZapprTheme();
   const [hasSavedNsec, setHasSavedNsec] = useState(false);
   const [nsecInput, setNsecInput] = useState('');
+  const [showRestore, setShowRestore] = useState(false);
+  const [phrase, setPhrase] = useState('');
+  const [restoreNsec, setRestoreNsec] = useState('');
   const [nwcInput, setNwcInput] = useState('');
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +88,22 @@ export default function LoginScreen() {
         { text: 'Create new', style: 'destructive', onPress: () => doPasskey(true) },
       ]
     );
+  };
+
+  /*
+    Lost-passkey recovery. The phrase restores the wallet; the nsec field takes
+    the identity half, which the words do not contain.
+  */
+  const doRestore = async () => {
+    setBusy('restore');
+    setError(null);
+    try {
+      await restoreFromPhrase(phrase, restoreNsec);
+      enter();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Restore failed');
+    }
+    setBusy(null);
   };
 
   const doUnlock = async () => {
@@ -223,6 +247,58 @@ export default function LoginScreen() {
                   </Text>
 
                   {divider('Or use an existing identity')}
+
+                  {/* Lost-passkey escape hatch — collapsed; a recovery route,
+                      not a login route. */}
+                  {!showRestore ? (
+                    <Pressable onPress={() => setShowRestore(true)} style={{ paddingVertical: 6 }}>
+                      <Text style={[mono, { color: t.faint, fontSize: 10.5 }]}>
+                        Lost your passkey? Restore from recovery phrase →
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <View style={{ gap: 10, marginBottom: 4 }}>
+                      <Text style={sectionLabel(t)}>Restore from recovery phrase</Text>
+                      <TextInput
+                        value={phrase}
+                        onChangeText={setPhrase}
+                        placeholder="your 12 words, separated by spaces"
+                        placeholderTextColor={t.faint}
+                        multiline
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        style={[inputStyle, { minHeight: 74, textAlignVertical: 'top' }]}
+                      />
+                      <Text style={[mono, { color: t.faint, fontSize: 10, lineHeight: 15 }]}>
+                        This restores your wallet. Your Nostr key is not in the phrase — add it
+                        below if you still have it, or leave it blank for a new one.
+                      </Text>
+                      <TextInput
+                        value={restoreNsec}
+                        onChangeText={setRestoreNsec}
+                        placeholder="nsec1… (optional)"
+                        placeholderTextColor={t.faint}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        secureTextEntry
+                        style={inputStyle}
+                      />
+                      <Pressable
+                        onPress={doRestore}
+                        disabled={!!busy || !phrase.trim()}
+                        style={primaryBtn(!!busy || !phrase.trim())}
+                      >
+                        {busy === 'restore' ? (
+                          <ActivityIndicator color={t.onOrange} />
+                        ) : (
+                          <Ionicons name="key-outline" size={16} color={t.onOrange} />
+                        )}
+                        <Text style={[sansBold, { color: t.onOrange, fontSize: 15 }]}>
+                          {busy === 'restore' ? 'Restoring…' : 'Restore wallet'}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  )}
                 </>
               ) : (
                 <>
